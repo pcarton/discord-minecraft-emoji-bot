@@ -13,6 +13,12 @@ bot.login(token);
 const prefix = '!';
 
 async function makeMinecraftEmotes(msg, args){
+    const member = msg.member
+    const neededPermission = 'MANAGE_EMOJIS'
+    if(!member.hasPermission(neededPermission)){
+        msg.reply("You don't have permissions to edit emojis!");
+        return
+    }
     for (index in args){
         const name = args[index]
         try{
