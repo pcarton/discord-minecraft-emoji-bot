@@ -18,10 +18,27 @@ async function makeMinecraftEmotes(msg, args){
         try{
             await getOnlineFaces.downloadOnlineUsersSkinLocations(name)
             if(msg.guild.available){
-                //TODO - Role checks on user creating emote and to update instead of create new if exists
-                msg.guild.emojis.create(`./skins/faces/${name}.png`, `${name}Minecraft`)
-                .then(emoji => msg.reply(`Created new emoji with name ${emoji.name}!`))
-                .catch(console.error);
+                emojiStr = `${name}Minecraft`
+                emojiArray = msg.guild.emojis.cache.array()
+                foundExisting = false
+                for(id in emojiArray ){
+                    guildEmoji = emojiArray[id]
+                    if(guildEmoji.name == emojiStr){
+                        foundExisting = true
+                    }
+                }
+                if(foundExisting){
+                    msg.reply(`Emoji with name ${emojiStr} already exists!`)
+                }else{
+                    //TODO - Role checks on user creating emote
+                    msg.guild.emojis.create(`./skins/faces/${name}.png`, emojiStr)
+                    .then(emoji => {
+                        msg.reply(`Created new emoji with name ${emoji.name}!`)
+                        emojiID =  msg.guild.emojis.resolve(emoji)
+                        msg.react(`${emojiID}`)
+                    })
+                    .catch(console.error);
+                }
             }
         }catch(ex){
             msg.reply(`There was an issue getting the skin for Minecraft user ${name}`)
