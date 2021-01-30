@@ -36,7 +36,6 @@ async function makeMinecraftEmotes(msg, args){
                 if(foundExisting){
                     msg.reply(`Emoji with name ${emojiStr} already exists!`)
                 }else{
-                    //TODO - Role checks on user creating emote
                     msg.guild.emojis.create(`./skins/faces/${name}.png`, emojiStr)
                     .then(emoji => {
                         msg.reply(`Created new emoji with name ${emoji.name}!`)
