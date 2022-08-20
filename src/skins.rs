@@ -14,7 +14,9 @@ fn save_minecraft_skin_image(user: String, img_bytes: Bytes) -> Result<String,Im
     let sub_image = imageops::crop(&mut image, 8, 8, 8, 8);
     let path = format!("skin_face_{}.png", user);
 
-    match sub_image.to_image().save_with_format(&path, ImageFormat::Png) {
+    let resized_image = image::imageops::resize(&sub_image.to_image(), 255, 255, image::imageops::FilterType::Nearest);
+
+    match resized_image.save_with_format(&path, ImageFormat::Png) {
         Ok(_) => Ok(path),
         Err(error) => panic!("Error saving sub image: {:#?}", error),
     }
