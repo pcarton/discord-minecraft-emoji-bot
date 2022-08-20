@@ -1,6 +1,7 @@
 use std::env;
 
 mod skins;
+mod minecraft_api_objects;
 
 use serenity::async_trait;
 use serenity::model::application::command::{Command, CommandOptionType};

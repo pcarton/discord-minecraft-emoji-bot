@@ -1,43 +1,6 @@
 use image::*;
 use bytes::Bytes;
-use serde::Deserialize;
-
-#[derive(Deserialize)]
-struct MinecraftUser {
-    name: String,
-    id: String,
-}
-
-#[derive(Deserialize)]
-struct MinecraftSessionData {
-    id: String,
-    name: String,
-    properties: Vec<MinecraftSessionPropertiesObject>,
-}
-
-#[derive(Deserialize)]
-struct MinecraftSessionPropertiesObject {
-    name: String,
-    value: String,
-}
-
-#[derive(Deserialize)]
-struct MinecraftEncodedTextureObject {
-    // timestamp: integer,
-    profileId: String,
-    profileName: String,
-    textures: MinecraftTextureObject,
-}
-
-#[derive(Deserialize)]
-struct MinecraftTextureObject {
-   SKIN:  MinecraftSkinObject,
-}
-
-#[derive(Deserialize)]
-struct MinecraftSkinObject {
-    url: String,
-}
+use crate::minecraft_api_objects;
 
 async fn get_minecraft_skin_bytes(url: String) -> reqwest::Result<Bytes> {
     let img_bytes = reqwest::get(url).await?
@@ -62,14 +25,14 @@ async fn get_user_skin_object_base64(username:String) -> reqwest::Result<String>
     
     let user_json = reqwest::get(url)
         .await?
-        .json::<MinecraftUser>()
+        .json::<minecraft_api_objects::User>()
         .await?;
 
     let session_url = format!("https://sessionserver.mojang.com/session/minecraft/profile/{}",user_json.id);
 
     let user_session_json = reqwest::get(session_url)
         .await?
-        .json::<MinecraftSessionData>()
+        .json::<minecraft_api_objects::SessionData>()
         .await?;
 
     Ok(user_session_json.properties[0].value.clone())
@@ -88,7 +51,7 @@ async fn get_user_skin_url(json_bytes: Vec<u8>) -> serde_json::Result<String> {
 
     println!("{}",texture_json);
 
-    let minecraft_texture_object: MinecraftEncodedTextureObject = serde_json::from_str(texture_json)?;
+    let minecraft_texture_object: minecraft_api_objects::EncodedTextureObject = serde_json::from_str(texture_json)?;
 
     println!("{}",minecraft_texture_object.textures.SKIN.url);
    Ok(minecraft_texture_object.textures.SKIN.url) 
