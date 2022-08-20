@@ -34,6 +34,23 @@ impl EventHandler for Handler {
                         "Please provide a valid user".to_string()
                     }
                 },
+                "minecraftemote" => {
+                    let options = command
+                        .data
+                        .options
+                        .get(0)
+                        .expect("Expected minecraft_username option")
+                        .resolved
+                        .as_ref()
+                        .expect("Expected minecraft_username String Object");
+
+                    if let CommandDataOptionValue::String(minecraft_username) = options {
+                        format!("minecraft_username is {}", minecraft_username)
+                    } else {
+                        "Issue parsing minecraft_username".to_string()
+                    }
+
+                },
                 _ => "not implemented :(".to_string(),
             };
 
