@@ -71,7 +71,7 @@ impl EventHandler for Handler {
                         .description("Create an Emote for the Server based on a Minecraft User's Skin")
                         .create_option(|option| {
                             option
-                                .name("minecraft username")
+                                .name("minecraft_username")
                                 .description("The Minecraft Username of the User you want to make an Emote of")
                                 .kind(CommandOptionType::String)
                                 .required(true)
