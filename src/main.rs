@@ -1,5 +1,7 @@
 use std::env;
 
+mod skins;
+
 use serenity::async_trait;
 use serenity::model::application::command::{Command, CommandOptionType};
 use serenity::model::application::interaction::application_command::CommandDataOptionValue;
@@ -45,6 +47,8 @@ impl EventHandler for Handler {
                         .expect("Expected minecraft_username String Object");
 
                     if let CommandDataOptionValue::String(minecraft_username) = options {
+                        skins::download_face(minecraft_username.clone())
+                            .await;
                         format!("minecraft_username is {}", minecraft_username)
                     } else {
                         "Issue parsing minecraft_username".to_string()
