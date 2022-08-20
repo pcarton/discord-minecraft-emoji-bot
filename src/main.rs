@@ -66,6 +66,18 @@ impl EventHandler for Handler {
                     command.name("ping").description("A ping command")
                 })
                 .create_application_command(|command| {
+                    command
+                        .name("minecraftemote")
+                        .description("Create an Emote for the Server based on a Minecraft User's Skin")
+                        .create_option(|option| {
+                            option
+                                .name("minecraft username")
+                                .description("The Minecraft Username of the User you want to make an Emote of")
+                                .kind(CommandOptionType::String)
+                                .required(true)
+                        })
+                })
+                .create_application_command(|command| {
                     command.name("id").description("Get a user id").create_option(|option| {
                         option
                             .name("id")
