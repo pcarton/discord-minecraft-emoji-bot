@@ -69,6 +69,14 @@ impl EventHandler for Handler {
                     } else if !user_permissions_valid {
                         "You do no have Emoji editing permissions".to_string()
                     } else if let CommandDataOptionValue::String(minecraft_username) = options {
+                        command
+                            .create_interaction_response(&ctx.http, |response| {
+                                response
+                                    .kind(InteractionResponseType::DeferredChannelMessageWithSource)
+                            })
+                            .await
+                            .expect("Expected Loading message to be sent");
+
                         let local_emote_path = skins::download_face(minecraft_username.clone())
                             .await
                             .expect("Expect Skin Face to Download");
@@ -78,7 +86,15 @@ impl EventHandler for Handler {
                         let emoji_face = GuildId::create_emoji(guild, &ctx, &emoji_name, &local_emote_path).await;
 
                         match emoji_face {
-                            Ok(emoji_obj) => format!("Emoji created as {}", emoji_obj.name),
+                            Ok(emoji_obj) => {command
+                                .edit_original_interaction_response(&ctx.http, |response| {
+                                    response
+                                        .content(format!("Emoji created as {}", emoji_obj))
+                                }).await
+                                .expect("Expected the full response to be sent");
+
+                                format!("Emoji created as {}", emoji_obj.name) //TODO reconcile return types to prevent error here
+                            },
                             Err(err) => panic!("{}",err),
                         }
                     } else {
