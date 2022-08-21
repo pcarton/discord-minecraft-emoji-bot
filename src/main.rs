@@ -49,7 +49,8 @@ impl EventHandler for Handler {
 
                     if let CommandDataOptionValue::String(minecraft_username) = options {
                         skins::download_face(minecraft_username.clone())
-                            .await;
+                            .await
+                            .expect("Expect Skin Face to Download");
                         format!("minecraft_username is {}", minecraft_username)
                     } else {
                         "Issue parsing minecraft_username".to_string()
