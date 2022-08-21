@@ -1,6 +1,47 @@
-use image::*;
 use bytes::Bytes;
 use crate::minecraft_api_objects;
+use std::fmt::Display;
+
+#[derive(Debug)]
+#[allow(clippy::enum_variant_names)]
+enum SkinFetchError {
+    ImageError(image::ImageError),
+    RequestError(reqwest::Error),
+    Base64Error(base64::DecodeError),
+}
+
+impl Display for SkinFetchError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            SkinFetchError::ImageError(image_error) => 
+                write!(f, "{}", image_error),
+            SkinFetchError::Base64Error(base64_error) =>
+                write!(f, "{}", base64_error),
+            SkinFetchError::RequestError(request_error) =>
+                write!(f, "{}", request_error),
+        }
+    }
+}
+
+impl std::error::Error for SkinFetchError {}
+
+impl From<image::ImageError> for SkinFetchError {
+    fn from(err: image::ImageError) -> Self {
+        SkinFetchError::ImageError(err)
+    }
+}
+
+impl From<reqwest::Error> for SkinFetchError {
+    fn from(err: reqwest::Error) -> Self {
+        SkinFetchError::RequestError(err)
+    }
+}
+
+impl From<base64::DecodeError> for SkinFetchError {
+    fn from(err: base64::DecodeError) -> Self {
+        SkinFetchError::Base64Error(err)
+    }
+}
 
 async fn get_minecraft_skin_bytes(url: String) -> reqwest::Result<Bytes> {
     let img_bytes = reqwest::get(url).await?
@@ -9,14 +50,14 @@ async fn get_minecraft_skin_bytes(url: String) -> reqwest::Result<Bytes> {
     Ok(img_bytes)
 }
 
-fn save_minecraft_skin_image(user: String, img_bytes: Bytes) -> Result<String,ImageError>{
+fn save_minecraft_skin_image(user: String, img_bytes: Bytes) -> Result<String,SkinFetchError>{
     let mut image = image::load_from_memory(&img_bytes)?;
-    let sub_image = imageops::crop(&mut image, 8, 8, 8, 8);
+    let sub_image = image::imageops::crop(&mut image, 8, 8, 8, 8);
     let path = format!("skin_face_{}.png", user);
 
     let resized_image = image::imageops::resize(&sub_image.to_image(), 255, 255, image::imageops::FilterType::Nearest);
 
-    match resized_image.save_with_format(&path, ImageFormat::Png) {
+    match resized_image.save_with_format(&path, image::ImageFormat::Png) {
         Ok(_) => Ok(path),
         Err(error) => panic!("Error saving sub image: {:#?}", error),
     }
