@@ -14,7 +14,7 @@ pub enum SkinFetchError {
 impl Display for SkinFetchError {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            SkinFetchError::ImageError(image_error) => 
+            SkinFetchError::ImageError(image_error) =>
                 write!(f, "{}", image_error),
             SkinFetchError::Base64Error(base64_error) =>
                 write!(f, "{}", base64_error),
@@ -61,9 +61,9 @@ impl From<serde_json::Error> for SkinFetchError {
 }
 
 pub async fn download_face(user: String) -> Result<String,SkinFetchError> {
-    
+
     let url = format!("https://api.mojang.com/users/profiles/minecraft/{}", user);
-    
+
     let user_json = reqwest::get(url)
         .await?
         .json::<minecraft_api_objects::User>()
@@ -84,7 +84,7 @@ pub async fn download_face(user: String) -> Result<String,SkinFetchError> {
 
     let minecraft_texture_object: minecraft_api_objects::EncodedTextureObject = serde_json::from_str(texture_json)?;
 
-    let skin_url = minecraft_texture_object.textures.SKIN.url; 
+    let skin_url = minecraft_texture_object.textures.SKIN.url;
 
     let img_bytes = reqwest::get(skin_url).await?
         .bytes().await?;
@@ -95,8 +95,13 @@ pub async fn download_face(user: String) -> Result<String,SkinFetchError> {
 
     let resized_image = image::imageops::resize(&sub_image.to_image(), 255, 255, image::imageops::FilterType::Nearest);
 
-    match resized_image.save_with_format(&path, image::ImageFormat::Png) {
-        Ok(_) => Ok(path),
-        Err(error) => panic!("Error saving sub image: {:#?}", error),
+    resized_image.save_with_format(&path, image::ImageFormat::Png)
+        .expect("Expected image to save to the filesystem");
+
+    let formatted_path = format!("./{}",path);
+
+    match serenity::utils::read_image(formatted_path) {
+        Ok(base64_path) => Ok(base64_path),
+        Err(error) => panic!("Error encoding image: {:#?}", error),
     }
 }

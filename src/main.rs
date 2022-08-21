@@ -47,11 +47,40 @@ impl EventHandler for Handler {
                         .as_ref()
                         .expect("Expected minecraft_username String Object");
 
-                    if let CommandDataOptionValue::String(minecraft_username) = options {
-                        skins::download_face(minecraft_username.clone())
+                    let user_permissions_valid = command
+                        .member
+                        .clone()
+                        .expect("Expect member to be there")
+                        .permissions
+                        .expect("Expect the permissions Object to be there")
+                        .manage_emojis_and_stickers();
+
+                    let bot_permissions_valid = command
+                        .app_permissions
+                        .expect("Expect the app_permissions Object to be there")
+                        .manage_emojis_and_stickers();
+
+                    let guild = command
+                        .guild_id
+                        .expect("Expect GuildID");
+
+                    if !bot_permissions_valid {
+                      "I do not have the Manage Emoji and Stickers permission in my role, please have your admin add them".to_string()
+                    } else if !user_permissions_valid {
+                        "You do no have Emoji editing permissions".to_string()
+                    } else if let CommandDataOptionValue::String(minecraft_username) = options {
+                        let local_emote_path = skins::download_face(minecraft_username.clone())
                             .await
                             .expect("Expect Skin Face to Download");
-                        format!("minecraft_username is {}", minecraft_username)
+
+                        let emoji_name = format!("{}Minecraft",minecraft_username);
+
+                        let emoji_face = GuildId::create_emoji(guild, &ctx, &emoji_name, &local_emote_path).await;
+
+                        match emoji_face {
+                            Ok(emoji_obj) => format!("Emoji created as {}", emoji_obj.name),
+                            Err(err) => panic!("{}",err),
+                        }
                     } else {
                         "Issue parsing minecraft_username".to_string()
                     }
@@ -83,7 +112,7 @@ impl EventHandler for Handler {
                 .expect("GUILD_ID must be an integer"),
         );
 
-        let commands = GuildId::set_application_commands(&guild_id, &ctx.http, |commands| {
+        let _commands = GuildId::set_application_commands(&guild_id, &ctx.http, |commands| {
             commands
                 .create_application_command(|command| {
                     command.name("ping").description("A ping command")
@@ -112,14 +141,14 @@ impl EventHandler for Handler {
         })
         .await;
 
-        println!("I now have the following guild slash commands: {:#?}", commands);
+        // println!("I now have the following guild slash commands: {:#?}", _commands);
 
-        let global_command = Command::create_global_application_command(&ctx.http, |command| {
+        let _global_command = Command::create_global_application_command(&ctx.http, |command| {
             command.name("wonderful_command").description("An amazing command")
         })
         .await;
 
-        println!("I created the following global slash command: {:#?}", global_command);
+        // println!("I created the following global slash command: {:#?}", _global_command);
     }
 }
 
