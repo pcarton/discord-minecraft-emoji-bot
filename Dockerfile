@@ -7,4 +7,8 @@ COPY Cargo.** /app/
 
 RUN cargo build -r
 
-ENTRYPOINT /app/target/release/discord-minecraft-emoji-bot
+FROM rust:slim
+
+COPY --from=build /app/target/release/discord-minecraft-emoji-bot /
+
+ENTRYPOINT /discord-minecraft-emoji-bot

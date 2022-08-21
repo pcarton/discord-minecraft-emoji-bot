@@ -144,7 +144,16 @@ impl EventHandler for Handler {
         // println!("I now have the following guild slash commands: {:#?}", _commands);
 
         let _global_command = Command::create_global_application_command(&ctx.http, |command| {
-            command.name("wonderful_command").description("An amazing command")
+                command
+                    .name("minecraftemote")
+                    .description("Create an Emote for the Server based on a Minecraft User's Skin")
+                    .create_option(|option| {
+                        option
+                            .name("minecraft_username")
+                            .description("The Minecraft Username of the User you want to make an Emote of")
+                            .kind(CommandOptionType::String)
+                            .required(true)
+                    })
         })
         .await;
 
