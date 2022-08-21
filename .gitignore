@@ -1,2 +1,8 @@
 node_modules/
 skins/
+
+# Added by cargo
+
+/target
+
+Cargo.lock

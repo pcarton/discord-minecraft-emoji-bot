@@ -1,12 +1,14 @@
-FROM node:alpine
+FROM rust:buster as build
 
 WORKDIR /app
 
-COPY ./package*.json /app/
-COPY ./*.js /app/
+COPY src/* /app/src/
+COPY Cargo.** /app/
 
-RUN npm ci
-RUN mkdir /app/skins
-RUN mkdir /app/skins/faces
+RUN cargo build -r
 
-ENTRYPOINT [ "node", "/app/bot.js" ]
+FROM rust:slim
+
+COPY --from=build /app/target/release/discord-minecraft-emoji-bot /
+
+ENTRYPOINT /discord-minecraft-emoji-bot
