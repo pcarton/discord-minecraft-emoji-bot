@@ -125,9 +125,6 @@ impl EventHandler for Handler {
         let _commands = GuildId::set_application_commands(&guild_id, &ctx.http, |commands| {
             commands
                 .create_application_command(|command| {
-                    command.name("ping").description("A ping command")
-                })
-                .create_application_command(|command| {
                     command
                         .name("minecraftemote")
                         .description("Create an Emote for the Server based on a Minecraft User's Skin")
@@ -138,15 +135,6 @@ impl EventHandler for Handler {
                                 .kind(CommandOptionType::String)
                                 .required(true)
                         })
-                })
-                .create_application_command(|command| {
-                    command.name("id").description("Get a user id").create_option(|option| {
-                        option
-                            .name("id")
-                            .description("The user to lookup")
-                            .kind(CommandOptionType::User)
-                            .required(true)
-                    })
                 })
         })
         .await;
