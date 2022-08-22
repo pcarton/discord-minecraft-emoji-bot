@@ -19,24 +19,7 @@ impl EventHandler for Handler {
         if let Interaction::ApplicationCommand(command) = interaction {
             // println!("Received command interaction: {:#?}", command);
 
-            let content = match command.data.name.as_str() {
-                "ping" => "Hey, I'm alive!".to_string(),
-                "id" => {
-                    let options = command
-                        .data
-                        .options
-                        .get(0)
-                        .expect("Expected user option")
-                        .resolved
-                        .as_ref()
-                        .expect("Expected user object");
-
-                    if let CommandDataOptionValue::User(user, _member) = options {
-                        format!("{}'s id is {}", user.tag(), user.id)
-                    } else {
-                        "Please provide a valid user".to_string()
-                    }
-                },
+            match command.data.name.as_str() {
                 "minecraftemote" => {
                     let options = command
                         .data
@@ -64,10 +47,28 @@ impl EventHandler for Handler {
                         .guild_id
                         .expect("Expect GuildID");
 
+                    command
+                        .create_interaction_response(&ctx.http, |response| {
+                            response
+                                .kind(InteractionResponseType::DeferredChannelMessageWithSource)
+                        })
+                        .await
+                        .expect("Expected Loading message to be sent");
+                    
                     if !bot_permissions_valid {
-                      "I do not have the Manage Emoji and Stickers permission in my role, please have your admin add them".to_string()
+                        command
+                            .edit_original_interaction_response(&ctx.http, |response| {
+                                response
+                                    .content("I do not have the Manage Emoji and Stickers permission in my role, please have your admin add them")
+                            }).await
+                            .expect("Expected the response to be sent");
                     } else if !user_permissions_valid {
-                        "You do no have Emoji editing permissions".to_string()
+                        command
+                            .edit_original_interaction_response(&ctx.http, |response| {
+                               response
+                                   .content("You do no have Emoji editing permissions")
+                        }).await
+                        .expect("Expected the response to be sent");
                     } else if let CommandDataOptionValue::String(minecraft_username) = options {
                         let local_emote_path = skins::download_face(minecraft_username.clone())
                             .await
@@ -78,27 +79,36 @@ impl EventHandler for Handler {
                         let emoji_face = GuildId::create_emoji(guild, &ctx, &emoji_name, &local_emote_path).await;
 
                         match emoji_face {
-                            Ok(emoji_obj) => format!("Emoji created as {}", emoji_obj.name),
+                            Ok(emoji_obj) => {command
+                                .edit_original_interaction_response(&ctx.http, |response| {
+                                    response
+                                        .content(format!("Emoji created as {}", emoji_obj))
+                                }).await
+                                .expect("Expected the full response to be sent");
+                            },
                             Err(err) => panic!("{}",err),
                         }
                     } else {
-                        "Issue parsing minecraft_username".to_string()
+                        command
+                            .edit_original_interaction_response(&ctx.http, |response|{
+                                response
+                                    .content("Issue parsing minecraft_username") 
+                            }).await
+                            .expect("Expected the full response to be sent");
                     }
 
                 },
-                _ => "not implemented :(".to_string(),
+                _ => {
+                    command
+                        .create_interaction_response(&ctx.http, |response| {
+                            response
+                                .kind(InteractionResponseType::ChannelMessageWithSource)
+                                .interaction_response_data(|message| message.content("Not Implemented :("))
+                        })
+                        .await
+                        .expect("Expected Loading message to be sent");
+                }
             };
-
-            if let Err(why) = command
-                .create_interaction_response(&ctx.http, |response| {
-                    response
-                        .kind(InteractionResponseType::ChannelMessageWithSource)
-                        .interaction_response_data(|message| message.content(content))
-                })
-                .await
-            {
-                println!("Cannot respond to slash command: {}", why);
-            }
         }
     }
 
@@ -115,9 +125,6 @@ impl EventHandler for Handler {
         let _commands = GuildId::set_application_commands(&guild_id, &ctx.http, |commands| {
             commands
                 .create_application_command(|command| {
-                    command.name("ping").description("A ping command")
-                })
-                .create_application_command(|command| {
                     command
                         .name("minecraftemote")
                         .description("Create an Emote for the Server based on a Minecraft User's Skin")
@@ -128,15 +135,6 @@ impl EventHandler for Handler {
                                 .kind(CommandOptionType::String)
                                 .required(true)
                         })
-                })
-                .create_application_command(|command| {
-                    command.name("id").description("Get a user id").create_option(|option| {
-                        option
-                            .name("id")
-                            .description("The user to lookup")
-                            .kind(CommandOptionType::User)
-                            .required(true)
-                    })
                 })
         })
         .await;
