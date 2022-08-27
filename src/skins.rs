@@ -1,66 +1,6 @@
 use crate::minecraft_api_objects;
-use std::fmt::Display;
 
-#[derive(Debug)]
-#[allow(clippy::enum_variant_names)]
-pub enum SkinFetchError {
-    ImageError(image::ImageError),
-    RequestError(reqwest::Error),
-    Base64Error(base64::DecodeError),
-    Utf8Error(std::str::Utf8Error),
-    JsonError(serde_json::Error),
-}
-
-impl Display for SkinFetchError {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        match self {
-            SkinFetchError::ImageError(image_error) =>
-                write!(f, "{}", image_error),
-            SkinFetchError::Base64Error(base64_error) =>
-                write!(f, "{}", base64_error),
-            SkinFetchError::RequestError(request_error) =>
-                write!(f, "{}", request_error),
-            SkinFetchError::Utf8Error(utf8_error) =>
-                write!(f, "{}", utf8_error),
-            SkinFetchError::JsonError(json_error) =>
-                write!(f, "{}", json_error),
-        }
-    }
-}
-
-impl std::error::Error for SkinFetchError {}
-
-impl From<image::ImageError> for SkinFetchError {
-    fn from(err: image::ImageError) -> Self {
-        SkinFetchError::ImageError(err)
-    }
-}
-
-impl From<std::str::Utf8Error> for SkinFetchError {
-    fn from(err: std::str::Utf8Error) -> Self {
-        SkinFetchError::Utf8Error(err)
-    }
-}
-
-impl From<reqwest::Error> for SkinFetchError {
-    fn from(err: reqwest::Error) -> Self {
-        SkinFetchError::RequestError(err)
-    }
-}
-
-impl From<base64::DecodeError> for SkinFetchError {
-    fn from(err: base64::DecodeError) -> Self {
-        SkinFetchError::Base64Error(err)
-    }
-}
-
-impl From<serde_json::Error> for SkinFetchError {
-    fn from(err: serde_json::Error) -> Self {
-        SkinFetchError::JsonError(err)
-    }
-}
-
-pub async fn download_face(user: String) -> Result<String,SkinFetchError> {
+pub async fn download_face(user: String) -> Result<String,Box<dyn std::error::Error>> {
 
     let url = format!("https://api.mojang.com/users/profiles/minecraft/{}", user);
 

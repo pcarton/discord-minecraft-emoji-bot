@@ -19,7 +19,15 @@ impl EventHandler for Handler {
         if let Interaction::ApplicationCommand(command) = interaction {
             // println!("Received command interaction: {:#?}", command);
 
-            match command.data.name.as_str() {
+            command
+                .create_interaction_response(&ctx.http, |response| {
+                    response
+                        .kind(InteractionResponseType::DeferredChannelMessageWithSource)
+                })
+                .await
+                .expect("Expected Loading message to be sent");
+
+            let content = match command.data.name.as_str() {
                 "minecraftemote" => {
                     let options = command
                         .data
@@ -46,29 +54,13 @@ impl EventHandler for Handler {
                     let guild = command
                         .guild_id
                         .expect("Expect GuildID");
+                    //TODO handle this to the user incase they try in a DM
 
-                    command
-                        .create_interaction_response(&ctx.http, |response| {
-                            response
-                                .kind(InteractionResponseType::DeferredChannelMessageWithSource)
-                        })
-                        .await
-                        .expect("Expected Loading message to be sent");
                     
                     if !bot_permissions_valid {
-                        command
-                            .edit_original_interaction_response(&ctx.http, |response| {
-                                response
-                                    .content("I do not have the Manage Emoji and Stickers permission in my role, please have your admin add them")
-                            }).await
-                            .expect("Expected the response to be sent");
+                        "I do not have the Manage Emoji and Stickers permission in my role, please have your admin add them".to_string()
                     } else if !user_permissions_valid {
-                        command
-                            .edit_original_interaction_response(&ctx.http, |response| {
-                               response
-                                   .content("You do no have Emoji editing permissions")
-                        }).await
-                        .expect("Expected the response to be sent");
+                        "You do no have Emoji editing permissions".to_string()
                     } else if let CommandDataOptionValue::String(minecraft_username) = options {
                         let local_emote_path = skins::download_face(minecraft_username.clone())
                             .await
@@ -76,39 +68,26 @@ impl EventHandler for Handler {
 
                         let emoji_name = format!("{}Minecraft",minecraft_username);
 
-                        let emoji_face = GuildId::create_emoji(guild, &ctx, &emoji_name, &local_emote_path).await;
+                        let emoji_face = GuildId::create_emoji(guild, &ctx, &emoji_name, &local_emote_path)
+                            .await
+                            .expect("Expected emoji to be created from file");
 
-                        match emoji_face {
-                            Ok(emoji_obj) => {command
-                                .edit_original_interaction_response(&ctx.http, |response| {
-                                    response
-                                        .content(format!("Emoji created as {}", emoji_obj))
-                                }).await
-                                .expect("Expected the full response to be sent");
-                            },
-                            Err(err) => panic!("{}",err),
-                        }
+                        format!("Emoji created as {}", emoji_face)
                     } else {
-                        command
-                            .edit_original_interaction_response(&ctx.http, |response|{
-                                response
-                                    .content("Issue parsing minecraft_username") 
-                            }).await
-                            .expect("Expected the full response to be sent");
+                        "Issue parsing minecraft_username".to_string() 
                     }
-
                 },
-                _ => {
-                    command
-                        .create_interaction_response(&ctx.http, |response| {
-                            response
-                                .kind(InteractionResponseType::ChannelMessageWithSource)
-                                .interaction_response_data(|message| message.content("Not Implemented :("))
-                        })
-                        .await
-                        .expect("Expected Loading message to be sent");
-                }
+                _ => "Not implemented :(".to_string()
             };
+
+            command
+                .edit_original_interaction_response(&ctx.http, |response| {
+                    response
+                        .content(content)
+                    })
+                    .await
+                    .expect("Expected message to be sent");
+
         }
     }
 
