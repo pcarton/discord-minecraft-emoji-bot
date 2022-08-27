@@ -17,8 +17,6 @@ struct Handler;
 impl EventHandler for Handler {
     async fn interaction_create(&self, ctx: Context, interaction: Interaction) {
         if let Interaction::ApplicationCommand(command) = interaction {
-            // println!("Received command interaction: {:#?}", command);
-
             command
                 .create_interaction_response(&ctx.http, |response| {
                     response
@@ -87,7 +85,6 @@ impl EventHandler for Handler {
                     })
                     .await
                     .expect("Expected message to be sent");
-
         }
     }
 
@@ -118,8 +115,6 @@ impl EventHandler for Handler {
         })
         .await;
 
-        // println!("I now have the following guild slash commands: {:#?}", _commands);
-
         let _global_command = Command::create_global_application_command(&ctx.http, |command| {
                 command
                     .name("minecraftemote")
@@ -133,8 +128,6 @@ impl EventHandler for Handler {
                     })
         })
         .await;
-
-        // println!("I created the following global slash command: {:#?}", _global_command);
     }
 }
 
