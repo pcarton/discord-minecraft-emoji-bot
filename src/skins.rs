@@ -1,5 +1,7 @@
 use crate::minecraft_api_objects;
 
+let discord_recommended_size = 108;
+
 pub async fn download_face(user: String) -> Result<String,Box<dyn std::error::Error>> {
 
     let url = format!("https://api.mojang.com/users/profiles/minecraft/{}", user);
@@ -33,7 +35,7 @@ pub async fn download_face(user: String) -> Result<String,Box<dyn std::error::Er
     let sub_image = image::imageops::crop(&mut image, 8, 8, 8, 8);
     let path = format!("skin_face_{}.png", user);
 
-    let resized_image = image::imageops::resize(&sub_image.to_image(), 255, 255, image::imageops::FilterType::Nearest);
+    let resized_image = image::imageops::resize(&sub_image.to_image(), &discord_recommended_size, &discord_recommended_size, image::imageops::FilterType::Nearest);
 
     resized_image.save_with_format(&path, image::ImageFormat::Png)
         .expect("Expected image to save to the filesystem");
