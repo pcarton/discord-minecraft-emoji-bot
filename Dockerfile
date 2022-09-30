@@ -7,7 +7,7 @@ COPY Cargo.** /app/
 
 RUN cargo build -r
 
-FROM rust:slim
+FROM gcr.io/distroless/cc
 
 COPY --from=build /app/target/release/discord-minecraft-emoji-bot /
 
