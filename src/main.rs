@@ -7,11 +7,30 @@ use serenity::async_trait;
 use serenity::model::application::command::{Command, CommandOptionType};
 use serenity::model::application::interaction::application_command::CommandDataOptionValue;
 use serenity::model::application::interaction::{Interaction, InteractionResponseType};
+use serenity::model::prelude::interaction::application_command::ApplicationCommandInteraction;
 use serenity::model::gateway::Ready;
 use serenity::model::id::GuildId;
 use serenity::prelude::*;
 
 struct Handler;
+
+fn check_permissions(command: ApplicationCommandInteraction) -> bool {
+    let user_permissions_valid = command
+        .member
+        .clone()
+        .expect("Expect member to be there")
+        .permissions
+        .expect("Expect the permissions Object to be there")
+        .manage_emojis_and_stickers();
+
+    let bot_permissions_valid = command
+        .app_permissions
+        .expect("Expect the app_permissions Object to be there")
+        .manage_emojis_and_stickers();
+
+    user_permissions_valid && bot_permissions_valid
+}
+
 
 #[async_trait]
 impl EventHandler for Handler {
@@ -25,58 +44,43 @@ impl EventHandler for Handler {
                 .await
                 .expect("Expected Loading message to be sent");
 
-            let content = match command.data.name.as_str() {
-                "minecraftemote" => {
-                    let options = command
-                        .data
-                        .options
-                        .get(0)
-                        .expect("Expected minecraft_username option")
-                        .resolved
-                        .as_ref()
-                        .expect("Expected minecraft_username String Object");
+                let content = match command.data.name.as_str() {
+                    "minecraftemote" => {
+                        let options = command
+                            .data
+                            .options
+                            .get(0)
+                            .expect("Expected minecraft_username option")
+                            .resolved
+                            .as_ref()
+                            .expect("Expected minecraft_username String Object");
 
-                    let user_permissions_valid = command
-                        .member
-                        .clone()
-                        .expect("Expect member to be there")
-                        .permissions
-                        .expect("Expect the permissions Object to be there")
-                        .manage_emojis_and_stickers();
+                        if command.guild_id.is_none() {
+                            "This command cannot be executed in a direct message".to_string()
+                        // Check if the bot and user have the required permissions
+                        } else if !check_permissions(command.clone()) {
+                            "I do not have the Manage Emoji and Stickers permission in my role, please have your admin add them".to_string()
+                        } else if let CommandDataOptionValue::String(minecraft_username) = options {
+                            let local_emote_path = skins::download_face(minecraft_username.clone())
+                                .await
+                                .expect("Expect Skin Face to Download");
 
-                    let bot_permissions_valid = command
-                        .app_permissions
-                        .expect("Expect the app_permissions Object to be there")
-                        .manage_emojis_and_stickers();
+                            let emoji_name = format!("{}Minecraft",minecraft_username);
 
-                    let guild = command
-                        .guild_id
-                        .expect("Expect GuildID");
-                    //TODO handle this to the user incase they try in a DM
+                            let guild = command.guild_id.expect("Expect GuildID");
 
-                    
-                    if !bot_permissions_valid {
-                        "I do not have the Manage Emoji and Stickers permission in my role, please have your admin add them".to_string()
-                    } else if !user_permissions_valid {
-                        "You do no have Emoji editing permissions".to_string()
-                    } else if let CommandDataOptionValue::String(minecraft_username) = options {
-                        let local_emote_path = skins::download_face(minecraft_username.clone())
-                            .await
-                            .expect("Expect Skin Face to Download");
+                            let emoji_face = GuildId::create_emoji(guild, &ctx, &emoji_name, &local_emote_path)
+                                .await
+                                .expect("Expected emoji to be created from file");
 
-                        let emoji_name = format!("{}Minecraft",minecraft_username);
+                            format!("Emoji created as {}", emoji_face)
+                        } else {
+                            "Issue parsing minecraft_username".to_string()
+                        }
+                    },
+                    _ => "Not implemented :(".to_string()
+                };
 
-                        let emoji_face = GuildId::create_emoji(guild, &ctx, &emoji_name, &local_emote_path)
-                            .await
-                            .expect("Expected emoji to be created from file");
-
-                        format!("Emoji created as {}", emoji_face)
-                    } else {
-                        "Issue parsing minecraft_username".to_string() 
-                    }
-                },
-                _ => "Not implemented :(".to_string()
-            };
 
             command
                 .edit_original_interaction_response(&ctx.http, |response| {
