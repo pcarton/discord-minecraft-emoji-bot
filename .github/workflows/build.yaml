@@ -16,6 +16,15 @@ jobs:
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     outputs:
       version: ${{ steps.bump_release.outputs.version }}
+
+    steps:
+    - id: bump_release
+      name: Bump Release
+      uses: rymndhng/release-on-push-action@v0.27.0
+      with:
+        bump_version_scheme: minor
+        dry_run: false
+        tag_prefix: 'v'
   
   push_to_registry:
     name: Push Docker image to Docker Hub
