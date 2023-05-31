@@ -19,7 +19,7 @@ jobs:
     steps:
     - id: bump_release
       name: Bump Release
-      uses: rymndhng/release-on-push-action@v0.27.0
+      uses: rymndhng/release-on-push-action@v0.28.0
       with:
         bump_version_scheme: patch
         dry_run: false
