@@ -1,9 +1,8 @@
 name: build image
 
 on:
-  push:
-    tags:
-      - 'v*'
+  release:
+    types: [published]
 
 jobs:
   push_to_registry:
