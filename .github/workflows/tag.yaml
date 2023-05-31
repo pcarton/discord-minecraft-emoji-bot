@@ -1,9 +1,9 @@
-name: make release
+name: make tag
 
 on:
   push:
     branches:
-      - main
+      - master
 
 jobs:
   make-new-release:
