@@ -1,0 +1,18 @@
+name: make release
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  make-new-release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: 'write'
+      pull-requests: 'read'
+      id-token: 'write'
+    env:
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    outputs:
+      version: ${{ steps.bump_release.outputs.version }}
