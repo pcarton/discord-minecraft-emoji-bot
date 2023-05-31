@@ -1,13 +1,26 @@
 name: build image
 
 on:
-  release:
-    types: [published,created,released]
+  push:
+    branches:
+      - main
 
 jobs:
+  make-new-release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: 'write'
+      pull-requests: 'read'
+      id-token: 'write'
+    env:
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    outputs:
+      version: ${{ steps.bump_release.outputs.version }}
+  
   push_to_registry:
     name: Push Docker image to Docker Hub
     runs-on: ubuntu-latest
+    needs: [make-new-release]
     steps:
       - name: Check out the repo
         uses: actions/checkout@v3
@@ -35,5 +48,5 @@ jobs:
           context: .
           file: ./Dockerfile
           push: true
-          tags: ${{ steps.meta.outputs.tags }}
+          tags: pcarton/discord-minecraft-emoji-bot:latest,pcarton/discord-minecraft-emoji-bot:${{ needs.make-new-release.outputs.version }}
           labels: ${{ steps.meta.outputs.labels }}
