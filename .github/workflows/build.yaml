@@ -22,7 +22,7 @@ jobs:
       name: Bump Release
       uses: rymndhng/release-on-push-action@v0.28.0
       with:
-        bump_version_scheme: ${{ github.actor == 'dependabot[bot]' && "patch" || "minor"  }}
+        bump_version_scheme: ${{ github.actor == 'dependabot[bot]' && 'patch' || 'minor'  }}
         dry_run: false
         tag_prefix: 'v'
   
