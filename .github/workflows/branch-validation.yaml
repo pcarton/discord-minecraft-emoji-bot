@@ -22,3 +22,5 @@ jobs:
         with:
           command: build
           args: --release --all-features
+        env:
+          RUSTFLAGS: --deny warnings
