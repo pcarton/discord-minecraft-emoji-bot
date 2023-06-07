@@ -26,7 +26,7 @@ pub async fn download_face(user: String) -> Result<String,Box<dyn std::error::Er
     let skin_object_base64 = &user_session_json.properties[0].value;
 
     // Decode the base64-encoded skin data into a vector of bytes
-    let skin_object_vec_u8 = base64::decode(skin_object_base64)?;
+    let skin_object_vec_u8 = Engine::decode(skin_object_base64)?;
 
     // Convert the vector of bytes into a string
     let texture_json = std::str::from_utf8(&skin_object_vec_u8)?;
