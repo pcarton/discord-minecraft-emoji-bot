@@ -29,7 +29,7 @@ jobs:
       uses: actions/checkout@v3
     - name: "Update Cargo.toml"
       run: |
-        sed -e 's/^\s*version = "v\{0,1\}[0-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*"\s*$/version = "${{ steps.bump_release.outputs.version }}"/g' Cargo.*
+        sed -i .bak -e 's/^\s*version = "v\{0,1\}[0-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*"\s*$/version = "${{ steps.bump_release.outputs.version }}"/g' Cargo.*
     - name: Commit and push changes
       run: |
         git config --global user.name "pcarton"
