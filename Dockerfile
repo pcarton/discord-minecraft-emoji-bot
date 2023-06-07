@@ -5,7 +5,7 @@ WORKDIR /app
 COPY src/* /app/src/
 COPY Cargo.** /app/
 
-RUN cargo build -r
+RUN RUSTFLAGS="--deny warnings" cargo build -r
 
 FROM gcr.io/distroless/cc
 

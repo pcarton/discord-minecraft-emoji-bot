@@ -18,6 +18,8 @@ jobs:
       - uses: actions-rs/toolchain@v1
         with:
           toolchain: stable
+      - name: "Set ENV Variables"
+        run: echo "RUSTFLAGS='--deny warnings'" >> $GITHUB_ENV
       - uses: actions-rs/cargo@v1
         with:
           command: build
