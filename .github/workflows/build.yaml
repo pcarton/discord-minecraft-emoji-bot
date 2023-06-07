@@ -34,6 +34,7 @@ jobs:
       run: |
         git config --global user.name "pcarton"
         git config --global user.email "patrick.d.carton@gmail.com"
+        git config advice.addIgnoredFile false
         git add Cargo.*
         git commit -m "Update Cargo.toml"
         git push
