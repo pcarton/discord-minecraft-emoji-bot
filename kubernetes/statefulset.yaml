@@ -45,7 +45,7 @@ spec:
           command:
           - "sh"
           - "-c"
-          - "get-secrets.sh"
+          - "/get-secrets.sh"
           env:
           - name: DISCORD_API_TOKEN_VERSION
             value: "1"
