@@ -27,16 +27,16 @@ spec:
         #         values:
         #         - "true"
         podAntiAffinity:
-        preferredDuringSchedulingIgnoredDuringExecution:
-        - weight: 100
-          podAffinityTerm:
-            labelSelector:
-              matchExpressions:
-              - key: app
-                operator: In
-                values:
-                - "cartonbot"
-            topologyKey: kubernetes.io/hostname
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 100
+            podAffinityTerm:
+              labelSelector:
+                matchExpressions:
+                - key: app
+                  operator: In
+                  values:
+                  - "cartonbot"
+              topologyKey: kubernetes.io/hostname
       containers:
         - name: secrets-injector
           image: cartonbot-init-secrets-image
@@ -52,9 +52,6 @@ spec:
           volumeMounts:
           - name: secrets
             mountPath: "/secrets"
-          volumes:
-          - name: secrets
-            emptyDir: {}
         - name: cartonbot
           image: cartonbot-app-image
           env:
@@ -62,8 +59,11 @@ spec:
             value: "/app/secrets.yaml"
           volumeMounts:
           - name: secrets
-              mountPath: "/app/secrets.yaml"
-              readOnly: true
-              subPath: "secrets.yaml"
+            mountPath: "/app/secrets.yaml"
+            readOnly: true
+            subPath: "secrets.yaml"
+      volumes:
+      - name: secrets
+        emptyDir: {}
 
 
