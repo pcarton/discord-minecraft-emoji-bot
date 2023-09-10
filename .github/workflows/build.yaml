@@ -81,6 +81,7 @@ jobs:
     - id: retag_image_as_latest
       name: 'Tag image as latest'
       run: |-
+        docker pull gcr.io/$GCLOUD_PROJECT/$IMAGE_NAME:$IMAGE_TAG
         docker tag gcr.io/$GCLOUD_PROJECT/$IMAGE_NAME:$IMAGE_TAG gcr.io/$GCLOUD_PROJECT/$IMAGE_NAME:latest
         docker push gcr.io/$GCLOUD_PROJECT/$IMAGE_NAME:latest
 
@@ -93,6 +94,7 @@ jobs:
     - id: retag_secret_injector_image_as_latest
       name: 'Tag image as latest'
       run: |-
+        docker pull gcr.io/$GCLOUD_PROJECT/$SECRET_INJECTOR_IMAGE_NAME:$IMAGE_TAG
         docker tag gcr.io/$GCLOUD_PROJECT/$SECRET_INJECTOR_IMAGE_NAME:$IMAGE_TAG gcr.io/$GCLOUD_PROJECT/$SECRET_INJECTOR_IMAGE_NAME:latest
         docker push gcr.io/$GCLOUD_PROJECT/$SECRET_INJECTOR_IMAGE_NAME:latest
 
