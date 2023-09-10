@@ -21,6 +21,11 @@ spec:
       nodeSelector:
         iam.gke.io/gke-metadata-server-enabled: "true"
         cloud.google.com/gke-spot: "true"
+      tolerations:
+      - key: "cloud.google.com/gke-spot"
+        operator: "Equal"
+        value: "true"
+        effect: "NoSchedule"
       terminationGracePeriodSeconds: 25
       affinity:
         podAntiAffinity:
