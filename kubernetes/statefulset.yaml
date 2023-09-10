@@ -45,7 +45,7 @@ spec:
           command:
           - "sh"
           - "-c"
-          - "get-secrets.sh"
+          - "/get-secrets.sh"
           env:
           - name: DISCORD_API_TOKEN_VERSION
             value: "1"
@@ -59,7 +59,7 @@ spec:
               cpu: "100m"
               memory: "100Mi"
             limits:
-               cpu: "100m"
+              cpu: "100m"
               memory: "100Mi"
       containers:
         - name: cartonbot
@@ -77,7 +77,7 @@ spec:
               cpu: "100m"
               memory: "100Mi"
             limits:
-               cpu: "100m"
+              cpu: "100m"
               memory: "100Mi"
       volumes:
       - name: secrets
