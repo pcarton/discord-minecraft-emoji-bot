@@ -1,6 +1,7 @@
 node_modules/
 skins/
 *.bak
+secrets.yaml
 # Added by cargo
 
 /target
