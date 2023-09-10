@@ -1,0 +1,20 @@
+#kustomize file
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: cartonbot
+
+commonLabels:
+  app: cartonbot
+
+images:
+  - name: cartonbot-app-image
+    newName: gcr.io/pcarton-personal/cartonbot
+    newTag: latest
+  - name: cartonbot-init-secrets-image
+    newName: gcr.io/pcarton-personal/secret-injector
+    newTag: latest
+
+resources:
+- statefulset.yaml
+- podDisruptionBudget.yaml
