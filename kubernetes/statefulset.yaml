@@ -10,6 +10,8 @@ spec:
   selector:
     matchLabels:
       app: cartonbot
+  updateStrategy:
+    type: RollingUpdate
   template :
     metadata:
       labels:
@@ -37,7 +39,7 @@ spec:
                   values:
                   - "cartonbot"
               topologyKey: kubernetes.io/hostname
-      containers:
+      initContainers:
         - name: secrets-injector
           image: cartonbot-init-secrets-image
           command:
@@ -52,6 +54,7 @@ spec:
           volumeMounts:
           - name: secrets
             mountPath: "/secrets"
+      containers:
         - name: cartonbot
           image: cartonbot-app-image
           env:

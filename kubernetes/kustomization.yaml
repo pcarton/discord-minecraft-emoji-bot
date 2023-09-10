@@ -10,10 +10,10 @@ commonLabels:
 images:
   - name: cartonbot-app-image
     newName: gcr.io/pcarton-personal/cartonbot
-    newTag: latest
+    newTag: 1.10.9
   - name: cartonbot-init-secrets-image
     newName: gcr.io/pcarton-personal/secret-injector
-    newTag: latest
+    newTag: 1.10.9
 
 resources:
 - statefulset.yaml
