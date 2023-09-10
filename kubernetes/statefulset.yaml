@@ -54,6 +54,13 @@ spec:
           volumeMounts:
           - name: secrets
             mountPath: "/secrets"
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "100Mi"
+            limits:
+               cpu: "100m"
+              memory: "100Mi"
       containers:
         - name: cartonbot
           image: cartonbot-app-image
@@ -65,6 +72,13 @@ spec:
             mountPath: "/app/secrets.yaml"
             readOnly: true
             subPath: "secrets.yaml"
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "100Mi"
+            limits:
+               cpu: "100m"
+              memory: "100Mi"
       volumes:
       - name: secrets
         emptyDir: {}
