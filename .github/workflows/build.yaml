@@ -69,15 +69,33 @@ jobs:
     - name: 'Set up Cloud SDK'
       uses: 'google-github-actions/setup-gcloud@v1.1.1'
 
+    - id: auth_docker
+      name: "Auth Docker"
+      run: |-
+        gcloud auth configure-docker
+
     - id: build_image
       name: 'Build Docker image to GCR'
       run: "gcloud builds submit --tag gcr.io/$GCLOUD_PROJECT/$IMAGE_NAME:$IMAGE_TAG"
+
+    - id: retag_image_as_latest
+      name: 'Tag image as latest'
+      run: |-
+        docker tag gcr.io/$GCLOUD_PROJECT/$IMAGE_NAME:$IMAGE_TAG gcr.io/$GCLOUD_PROJECT/$IMAGE_NAME:latest
+        docker push gcr.io/$GCLOUD_PROJECT/$IMAGE_NAME:latest
+
 
     - id: build_secret_injector_image
       name: 'Build Docker image to GCR'
       run: |-
         cd secret-injector/
         gcloud builds submit --tag gcr.io/$GCLOUD_PROJECT/$SECRET_INJECTOR_IMAGE_NAME:$IMAGE_TAG
+
+    - id: retag_secret_injector_image_as_latest
+      name: 'Tag image as latest'
+      run: |-
+        docker tag gcr.io/$GCLOUD_PROJECT/$SECRET_INJECTOR_IMAGE_NAME:$IMAGE_TAG gcr.io/$GCLOUD_PROJECT/$SECRET_INJECTOR_IMAGE_NAME:latest
+        docker push gcr.io/$GCLOUD_PROJECT/$SECRET_INJECTOR_IMAGE_NAME:latest
 
     - id: set_up_kustomize
       name: Set up Kustomize
