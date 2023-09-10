@@ -52,7 +52,7 @@ jobs:
       SECRET_INJECTOR_IMAGE_NAME: "secret-injector"
       IMAGE_TAG: ${{ needs.make-new-release.outputs.version }}
       DEPLOYMENT_NAME: "cartonbot"
-    needs: [make-new-release,spellcheck]
+    needs: [make-new-release]
 
     steps:
     - name: Checkout
