@@ -18,16 +18,16 @@ spec:
         app: cartonbot
     spec:
       serviceAccountName: cartonbot-discord-sa
+      nodeSelector:
+        iam.gke.io/gke-metadata-server-enabled: "true"
+        cloud.google.com/gke-spot: "true"
+      tolerations:
+      - key: "cloud.google.com/gke-spot"
+        operator: "Equal"
+        value: "true"
+        effect: "NoSchedule"
       terminationGracePeriodSeconds: 25
       affinity:
-        # nodeAffinity:
-        #   requiredDuringSchedulingIgnoredDuringExecution:
-        #     nodeSelectorTerms:
-        #     - matchExpressions:
-        #       - key: "cloud.google.com/gke-spot"
-        #         operator: In
-        #         values:
-        #         - "true"
         podAntiAffinity:
           preferredDuringSchedulingIgnoredDuringExecution:
           - weight: 100
@@ -50,7 +50,7 @@ spec:
           - name: DISCORD_API_TOKEN_VERSION
             value: "1"
           - name: DISCORD_GUILD_ID_VERSION
-            value: "1" 
+            value: "1"
           volumeMounts:
           - name: secrets
             mountPath: "/secrets"
