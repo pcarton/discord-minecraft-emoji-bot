@@ -1,0 +1,69 @@
+# StatefulSet for cartonbot discord bot
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: cartonbot
+  labels:
+    app: cartonbot
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: cartonbot
+  template :
+    metadata:
+      labels:
+        app: cartonbot
+    spec:
+      serviceAccountName: cartonbot-discord-sa
+      terminationGracePeriodSeconds: 25
+      affinity:
+        # nodeAffinity:
+        #   requiredDuringSchedulingIgnoredDuringExecution:
+        #     nodeSelectorTerms:
+        #     - matchExpressions:
+        #       - key: "cloud.google.com/gke-spot"
+        #         operator: In
+        #         values:
+        #         - "true"
+        podAntiAffinity:
+        preferredDuringSchedulingIgnoredDuringExecution:
+        - weight: 100
+          podAffinityTerm:
+            labelSelector:
+              matchExpressions:
+              - key: app
+                operator: In
+                values:
+                - "cartonbot"
+            topologyKey: kubernetes.io/hostname
+      containers:
+        - name: secrets-injector
+          image: cartonbot-init-secrets-image
+          command:
+          - "sh"
+          - "-c"
+          - "get-secrets.sh"
+          env:
+          - name: DISCORD_API_TOKEN_VERSION
+            value: "1"
+          - name: DISCORD_GUILD_ID_VERSION
+            value: "1" 
+          volumeMounts:
+          - name: secrets
+            mountPath: "/secrets"
+          volumes:
+          - name: secrets
+            emptyDir: {}
+        - name: cartonbot
+          image: cartonbot-app-image
+          env:
+          - name: SECRETS_FILE_PATH
+            value: "/app/secrets.yaml"
+          volumeMounts:
+          - name: secrets
+              mountPath: "/app/secrets.yaml"
+              readOnly: true
+              subPath: "secrets.yaml"
+
+

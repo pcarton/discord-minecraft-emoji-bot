@@ -39,37 +39,64 @@ jobs:
         git commit -m "Update Cargo.toml"
         git push
   
-  push_to_registry:
-    name: Push Docker image to Docker Hub
+  build-and-deploy:
     runs-on: ubuntu-latest
-    if: ${{ github.actor != 'dependabot[bot]' }}
-    needs: [make-new-release]
+    permissions:
+      contents: 'read'
+      pull-requests: 'read'
+      id-token: 'write'
+    env:
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      GOOGLE_REGION: "us-central1"
+      IMAGE_NAME: "cartonbot"
+      SECRET_INJECTOR_IMAGE_NAME: "secret-injector"
+      IMAGE_TAG: ${{ needs.make-new-release.outputs.version }}
+      DEPLOYMENT_NAME: "cartonbot"
+    needs: [make-new-release,spellcheck]
+
     steps:
-      - name: Check out the repo
-        uses: actions/checkout@v4.0.0
-      
-      - name: Log in to Docker Hub
-        uses: docker/login-action@465a07811f14bebb1938fbed4728c6a1ff8901fc
-        with:
-          username: ${{ secrets.DOCKER_USERNAME }}
-          password: ${{ secrets.DOCKER_PASSWORD }}
-      
-      - name: Extract metadata (tags, labels) for Docker
-        id: meta
-        uses: docker/metadata-action@818d4b7b91585d195f67373fd9cb0332e31a7175
-        with:
-          images: pcarton/discord-minecraft-emoji-bot
-          flavor: |
-            latest=true
-          tags: |
-            type=semver,pattern={{version}}
-            type=semver,pattern={{major}}.{{minor}}
-      
-      - name: Build and push Docker image
-        uses: docker/build-push-action@2eb1c1961a95fc15694676618e422e8ba1d63825
-        with:
-          context: .
-          file: ./Dockerfile
-          push: true
-          tags: pcarton/discord-minecraft-emoji-bot:latest,pcarton/discord-minecraft-emoji-bot:${{ needs.make-new-release.outputs.version }}
-          labels: ${{ steps.meta.outputs.labels }}
+    - name: Checkout
+      uses: actions/checkout@v4.0.0
+      with:
+        submodules: recursive
+
+    - id: 'auth'
+      uses: 'google-github-actions/auth@v1.1.1'
+      with:
+        workload_identity_provider: "projects/1099089755819/locations/global/workloadIdentityPools/git-pool/providers/git-provider"
+        service_account: 'svc-github-actions@pcarton-personal.iam.gserviceaccount.com'
+
+    - name: 'Set up Cloud SDK'
+      uses: 'google-github-actions/setup-gcloud@v1.1.1'
+
+    - id: build_image
+      name: 'Build Docker image to GCR'
+      run: "gcloud builds submit --tag gcr.io/$GCLOUD_PROJECT/$IMAGE_NAME:$IMAGE_TAG"
+
+    - id: build_secret_injector_image
+      name: 'Build Docker image to GCR'
+      run: |-
+        cd secret-injector/
+        gcloud builds submit --tag gcr.io/$GCLOUD_PROJECT/$SECRET_INJECTOR_IMAGE_NAME:$IMAGE_TAG
+
+    - id: set_up_kustomize
+      name: Set up Kustomize
+      run: |-
+        curl -s "https://raw.githubusercontent.com/kubernetes-sigs/kustomize/master/hack/install_kustomize.sh"  | bash
+        chmod u+x ./kustomize
+        mv ./kustomize ./kubernetes/
+
+    - id: setup_cluster_auth
+      name: Setup Cluster Auth
+      uses: google-github-actions/get-gke-credentials@v1.0.2
+      with:
+        cluster_name: "mettaur"
+        location: "us-central1"
+
+    - id: deploy_gke
+      name: Deploy to GKE
+      run: |-
+        cd kubernetes/
+        ./kustomize edit set image cartonbot-app-image=gcr.io/$GCLOUD_PROJECT/$IMAGE_NAME:$IMAGE_TAG
+        ./kustomize edit set image cartonbot-init-secrets-image=gcr.io/$GCLOUD_PROJECT/$SECRET_INJECTOR_IMAGE_NAME:$IMAGE_TAG
+        ./kustomize build . | kubectl apply -f -

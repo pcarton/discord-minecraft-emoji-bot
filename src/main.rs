@@ -2,6 +2,7 @@ use std::env;
 
 mod skins;
 mod minecraft_api_objects;
+mod secret_file_objects;
 
 use serenity::async_trait;
 use serenity::model::application::command::{Command, CommandOptionType};
@@ -95,10 +96,15 @@ impl EventHandler for Handler {
     async fn ready(&self, ctx: Context, ready: Ready) {
         println!("{} is connected!", ready.user.name);
 
+        let filepath = env::var("SECRETS_FILE_PATH").expect("SECRETS_FILE_PATH must be set");
+
+        let file = std::fs::File::open(filepath).expect("Could not open file.");
+        let secret_file_contents: secret_file_objects::SecretFile = serde_yaml::from_reader(file).expect("Could not read values.");
+
+        let guild_id_from_file = secret_file_contents.secrets.discord_guild_id;
+
         let guild_id = GuildId(
-            env::var("GUILD_ID")
-                .expect("Expected GUILD_ID in environment")
-                .parse()
+            guild_id_from_file.parse()
                 .expect("GUILD_ID must be an integer"),
         );
 
@@ -137,8 +143,13 @@ impl EventHandler for Handler {
 
 #[tokio::main]
 async fn main() {
+    let filepath = env::var("SECRETS_FILE_PATH").expect("SECRETS_FILE_PATH must be set");
+
+    let file = std::fs::File::open(filepath).expect("Could not open file.");
+    let secret_file_contents: secret_file_objects::SecretFile = serde_yaml::from_reader(file).expect("Could not read values.");
+
     // Configure the client with your Discord bot token in the environment.
-    let token = env::var("DISCORD_TOKEN").expect("Expected a token in the environment");
+    let token = secret_file_contents.secrets.discord_api_token;
 
     // Build our client.
     let mut client = Client::builder(token, GatewayIntents::empty())
