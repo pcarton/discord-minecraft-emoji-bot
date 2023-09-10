@@ -10,6 +10,8 @@ spec:
   selector:
     matchLabels:
       app: cartonbot
+  updateStrategy:
+    type: RollingUpdate
   template :
     metadata:
       labels:
@@ -37,7 +39,7 @@ spec:
                   values:
                   - "cartonbot"
               topologyKey: kubernetes.io/hostname
-      containers:
+      initContainers:
         - name: secrets-injector
           image: cartonbot-init-secrets-image
           command:
@@ -52,6 +54,14 @@ spec:
           volumeMounts:
           - name: secrets
             mountPath: "/secrets"
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "100Mi"
+            limits:
+               cpu: "100m"
+              memory: "100Mi"
+      containers:
         - name: cartonbot
           image: cartonbot-app-image
           env:
@@ -62,6 +72,13 @@ spec:
             mountPath: "/app/secrets.yaml"
             readOnly: true
             subPath: "secrets.yaml"
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "100Mi"
+            limits:
+               cpu: "100m"
+              memory: "100Mi"
       volumes:
       - name: secrets
         emptyDir: {}
