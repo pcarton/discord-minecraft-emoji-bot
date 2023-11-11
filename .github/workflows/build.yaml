@@ -26,7 +26,7 @@ jobs:
         dry_run: false
         tag_prefix: ''
     - name: Check out the repo
-      uses: actions/checkout@v4.0.0
+      uses: actions/checkout@v4.1.0
     - name: "Update Cargo.toml"
       run: |
         sed -i.bak -e 's/^\s*version = "\{0,1\}[0-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*"\s*$/version = "${{ steps.bump_release.outputs.version }}"/g' Cargo.toml
@@ -39,7 +39,7 @@ jobs:
         git commit -m "Update Cargo.toml"
         git push
   
-  build-and-deploy:
+  build-and-upload:
     runs-on: ubuntu-latest
     permissions:
       contents: 'read'
@@ -98,24 +98,24 @@ jobs:
         docker tag gcr.io/$GCLOUD_PROJECT/$SECRET_INJECTOR_IMAGE_NAME:$IMAGE_TAG gcr.io/$GCLOUD_PROJECT/$SECRET_INJECTOR_IMAGE_NAME:latest
         docker push gcr.io/$GCLOUD_PROJECT/$SECRET_INJECTOR_IMAGE_NAME:latest
 
-    - id: set_up_kustomize
-      name: Set up Kustomize
-      run: |-
-        curl -s "https://raw.githubusercontent.com/kubernetes-sigs/kustomize/master/hack/install_kustomize.sh"  | bash
-        chmod u+x ./kustomize
-        mv ./kustomize ./kubernetes/
+    # - id: set_up_kustomize
+    #   name: Set up Kustomize
+    #   run: |-
+    #     curl -s "https://raw.githubusercontent.com/kubernetes-sigs/kustomize/master/hack/install_kustomize.sh"  | bash
+    #     chmod u+x ./kustomize
+    #     mv ./kustomize ./kubernetes/
 
-    - id: setup_cluster_auth
-      name: Setup Cluster Auth
-      uses: google-github-actions/get-gke-credentials@v1.0.2
-      with:
-        cluster_name: "mettaur"
-        location: "us-central1"
+    # - id: setup_cluster_auth
+    #   name: Setup Cluster Auth
+    #   uses: google-github-actions/get-gke-credentials@v1.0.2
+    #   with:
+    #     cluster_name: "mettaur"
+    #     location: "us-central1"
 
-    - id: deploy_gke
-      name: Deploy to GKE
-      run: |-
-        cd kubernetes/
-        ./kustomize edit set image cartonbot-app-image=gcr.io/$GCLOUD_PROJECT/$IMAGE_NAME:$IMAGE_TAG
-        ./kustomize edit set image cartonbot-init-secrets-image=gcr.io/$GCLOUD_PROJECT/$SECRET_INJECTOR_IMAGE_NAME:$IMAGE_TAG
-        ./kustomize build . | kubectl apply -f -
+    # - id: deploy_gke
+    #   name: Deploy to GKE
+    #   run: |-
+    #     cd kubernetes/
+    #     ./kustomize edit set image cartonbot-app-image=gcr.io/$GCLOUD_PROJECT/$IMAGE_NAME:$IMAGE_TAG
+    #     ./kustomize edit set image cartonbot-init-secrets-image=gcr.io/$GCLOUD_PROJECT/$SECRET_INJECTOR_IMAGE_NAME:$IMAGE_TAG
+    #     ./kustomize build . | kubectl apply -f -
