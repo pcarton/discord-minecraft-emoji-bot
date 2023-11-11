@@ -26,7 +26,7 @@ jobs:
         dry_run: false
         tag_prefix: ''
     - name: Check out the repo
-      uses: actions/checkout@v4.0.0
+      uses: actions/checkout@v4.1.0
     - name: "Update Cargo.toml"
       run: |
         sed -i.bak -e 's/^\s*version = "\{0,1\}[0-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*"\s*$/version = "${{ steps.bump_release.outputs.version }}"/g' Cargo.toml
