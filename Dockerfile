@@ -2,7 +2,7 @@ FROM rust:1.74.1-buster as build
 
 WORKDIR /app
 
-COPY src/* /app/src/
+COPY src/ /app/src/
 COPY Cargo.** /app/
 
 RUN RUSTFLAGS="--deny warnings" cargo build -r
