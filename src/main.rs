@@ -1,34 +1,16 @@
 use std::env;
 
-mod skins;
-mod minecraft_api_objects;
 mod secret_file_objects;
+mod commands;
 
 use serenity::async_trait;
-use serenity::builder::{CreateCommand,CreateCommandOption,CreateInteractionResponse,CreateInteractionResponseMessage,EditInteractionResponse};
-use serenity::model::application::{Command,CommandInteraction,CommandOptionType,CommandDataOptionValue,Interaction};
+use serenity::builder::{CreateInteractionResponse,CreateInteractionResponseMessage,EditInteractionResponse};
+use serenity::model::application::{Command,Interaction};
 use serenity::model::gateway::Ready;
 use serenity::model::id::GuildId;
 use serenity::prelude::*;
 
 struct Handler;
-
-fn check_permissions(command: CommandInteraction) -> bool {
-    let user_permissions_valid = command
-        .member
-        .clone()
-        .expect("Expect member to be there")
-        .permissions
-        .expect("Expect the permissions Object to be there")
-        .manage_guild_expressions();
-
-    let bot_permissions_valid = command
-        .app_permissions
-        .expect("Expect the app_permissions Object to be there")
-        .manage_guild_expressions();
-
-    user_permissions_valid && bot_permissions_valid
-}
 
 #[async_trait]
 impl EventHandler for Handler {
@@ -40,37 +22,7 @@ impl EventHandler for Handler {
                 .expect("Expected Loading message to be sent");
 
                 let content = match command.data.name.as_str() {
-                    "minecraftemote" => {
-                        let options = &command
-                            .data
-                            .options
-                            .get(0)
-                            .expect("Expected minecraft_username option")
-                            .value;
-
-                        if command.guild_id.is_none() {
-                            "This command cannot be executed in a direct message".to_string()
-                        // Check if the bot and user have the required permissions
-                        } else if !check_permissions(command.clone()) {
-                            "I do not have the Manage Emoji and Stickers permission in my role, please have your admin add them".to_string()
-                        } else if let CommandDataOptionValue::String(minecraft_username) = options {
-                            let local_emote_path = skins::download_face(minecraft_username.clone())
-                                .await
-                                .expect("Expect Skin Face to Download");
-
-                            let emoji_name = format!("{}Minecraft",minecraft_username);
-
-                            let guild = command.guild_id.expect("Expect GuildID");
-
-                            let emoji_face = GuildId::create_emoji(guild, &ctx, &emoji_name, &local_emote_path)
-                                .await
-                                .expect("Expected emoji to be created from file");
-
-                            format!("Emoji created as {}", emoji_face)
-                        } else {
-                            "Issue parsing minecraft_username".to_string()
-                        }
-                    },
+                    "minecraftemote" => commands::minecraftemote::run(&ctx, &command).await,
                     _ => "Not implemented :(".to_string()
                 };
 
@@ -97,17 +49,12 @@ impl EventHandler for Handler {
                 .expect("GUILD_ID must be an integer"),
         );
 
-        let minecraft_command = CreateCommand::new("minecraftemote")
-            .description("Create an Emote for the Server based on a Minecraft User's Skin")
-            .add_option(
-                CreateCommandOption::new(CommandOptionType::String, "minecraft_username", "The Minecraft Username of the User you want to make an Emote of")
-                    .required(true)
-            );
-
-        let _commands = guild_id.set_commands(&ctx.http, vec![minecraft_command.clone()])
+        let _commands = guild_id.set_commands(&ctx.http, vec![
+            commands::minecraftemote::register()
+        ])
         .await;
 
-        let _global_command = Command::create_global_command(&ctx.http, minecraft_command.clone())
+        let _global_command = Command::create_global_command(&ctx.http, commands::minecraftemote::register())
         .await;
     }
 }
