@@ -1,4 +1,4 @@
-name: validate branch
+name: Validate Branch
 
 on:  
   pull_request:
@@ -24,3 +24,15 @@ jobs:
           args: --release --all-features
         env:
           RUSTFLAGS: --deny warnings
+  validate_docker_build:
+    name: Validate Docker Build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout the Repo
+        uses: actions/checkout@v3
+      - name: Build Docker Image
+        uses: docker/build-push-action@v5.1.0
+        with:
+          context: .
+          file: ./Dockerfile
+          push: false
