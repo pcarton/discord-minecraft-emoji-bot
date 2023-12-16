@@ -1,4 +1,5 @@
 use crate::minecraft_api_objects;
+use serenity::builder::CreateAttachment;
 use base64::engine::general_purpose;
 use base64::Engine;
 
@@ -62,12 +63,13 @@ pub async fn download_face(user: String) -> Result<String,Box<dyn std::error::Er
     // Construct the formatted path to the image on the file system
     let formatted_path = format!("./{}",path);
 
-    // Read the image from the file system and return the base64-encoded version
-    match serenity::utils::read_image(formatted_path) {
-        Ok(base64_path) => Ok(base64_path),
-        // If there is an error, panic and display the error
-        Err(error) => panic!("Error encoding image: {:#?}", error),
-    }
+    let attachment_builder = CreateAttachment::path(formatted_path)
+        .await
+        .expect("Expected CreateAttachment object to be made from the Path");
+
+    let base64 = CreateAttachment::to_base64(&attachment_builder);
+
+    Ok(base64)
 }
 
 
