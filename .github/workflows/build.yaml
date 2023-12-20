@@ -48,6 +48,7 @@ jobs:
     env:
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       GOOGLE_REGION: "us-central1"
+      GOOGLE_ARTIFACT_REGISTRY: "pcarton-internal-docker"
       IMAGE_NAME: "cartonbot"
       SECRET_INJECTOR_IMAGE_NAME: "secret-injector"
       IMAGE_TAG: ${{ needs.make-new-release.outputs.version }}
@@ -76,27 +77,27 @@ jobs:
 
     - id: build_image
       name: 'Build Bot Docker image to GCR'
-      run: "gcloud builds submit --tag gcr.io/$GCLOUD_PROJECT/$IMAGE_NAME:$IMAGE_TAG"
+      run: "gcloud builds submit --tag us-docker.pkg.dev/$GCLOUD_PROJECT/$GOOGLE_ARTIFACT_REGISTRY/$IMAGE_NAME:$IMAGE_TAG"
 
     - id: retag_image_as_latest
       name: 'Tag image as latest'
       run: |-
-        docker pull gcr.io/$GCLOUD_PROJECT/$IMAGE_NAME:$IMAGE_TAG
-        docker tag gcr.io/$GCLOUD_PROJECT/$IMAGE_NAME:$IMAGE_TAG gcr.io/$GCLOUD_PROJECT/$IMAGE_NAME:latest
-        docker push gcr.io/$GCLOUD_PROJECT/$IMAGE_NAME:latest
+        docker pull us-docker.pkg.dev/$GCLOUD_PROJECT/$GOOGLE_ARTIFACT_REGISTRY/$IMAGE_NAME:$IMAGE_TAG
+        docker tag us-docker.pkg.dev/$GCLOUD_PROJECT/$GOOGLE_ARTIFACT_REGISTRY/$IMAGE_NAME:$IMAGE_TAG us-docker.pkg.dev/$GCLOUD_PROJECT/$GOOGLE_ARTIFACT_REGISTRY/$IMAGE_NAME:latest
+        docker push us-docker.pkg.dev/$GCLOUD_PROJECT/$GOOGLE_ARTIFACT_REGISTRY/$IMAGE_NAME:latest
 
     - id: build_secret_injector_image
       name: 'Build Secret Injector Docker image to GCR'
       run: |-
         cd secret-injector/
-        gcloud builds submit --tag gcr.io/$GCLOUD_PROJECT/$SECRET_INJECTOR_IMAGE_NAME:$IMAGE_TAG
+        gcloud builds submit --tag us-docker.pkg.dev/$GCLOUD_PROJECT/$GOOGLE_ARTIFACT_REGISTRY/$SECRET_INJECTOR_IMAGE_NAME:$IMAGE_TAG
 
     - id: retag_secret_injector_image_as_latest
       name: 'Tag image as latest'
       run: |-
-        docker pull gcr.io/$GCLOUD_PROJECT/$SECRET_INJECTOR_IMAGE_NAME:$IMAGE_TAG
-        docker tag gcr.io/$GCLOUD_PROJECT/$SECRET_INJECTOR_IMAGE_NAME:$IMAGE_TAG gcr.io/$GCLOUD_PROJECT/$SECRET_INJECTOR_IMAGE_NAME:latest
-        docker push gcr.io/$GCLOUD_PROJECT/$SECRET_INJECTOR_IMAGE_NAME:latest
+        docker pull us-docker.pkg.dev/$GCLOUD_PROJECT/$GOOGLE_ARTIFACT_REGISTRY/$SECRET_INJECTOR_IMAGE_NAME:$IMAGE_TAG
+        docker tag us-docker.pkg.dev/$GCLOUD_PROJECT/$GOOGLE_ARTIFACT_REGISTRY/$SECRET_INJECTOR_IMAGE_NAME:$IMAGE_TAG us-docker.pkg.dev/$GCLOUD_PROJECT/$GOOGLE_ARTIFACT_REGISTRY/$SECRET_INJECTOR_IMAGE_NAME:latest
+        docker push us-docker.pkg.dev/$GCLOUD_PROJECT/$GOOGLE_ARTIFACT_REGISTRY/$SECRET_INJECTOR_IMAGE_NAME:latest
 
     # - id: set_up_kustomize
     #   name: Set up Kustomize
@@ -116,6 +117,6 @@ jobs:
     #   name: Deploy to GKE
     #   run: |-
     #     cd kubernetes/
-    #     ./kustomize edit set image cartonbot-app-image=gcr.io/$GCLOUD_PROJECT/$IMAGE_NAME:$IMAGE_TAG
-    #     ./kustomize edit set image cartonbot-init-secrets-image=gcr.io/$GCLOUD_PROJECT/$SECRET_INJECTOR_IMAGE_NAME:$IMAGE_TAG
+    #     ./kustomize edit set image cartonbot-app-image=us-docker.pkg.dev/$GCLOUD_PROJECT/$GOOGLE_ARTIFACT_REGISTRY/$IMAGE_NAME:$IMAGE_TAG
+    #     ./kustomize edit set image cartonbot-init-secrets-image=us-docker.pkg.dev/$GCLOUD_PROJECT/$GOOGLE_ARTIFACT_REGISTRY/$SECRET_INJECTOR_IMAGE_NAME:$IMAGE_TAG
     #     ./kustomize build . | kubectl apply -f -
