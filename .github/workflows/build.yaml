@@ -99,7 +99,7 @@ jobs:
       IMAGE_TAG: ${{ needs.make-new-release.outputs.version }}
       DEPLOYMENT_NAME: "cartonbot"
     needs: [make-new-release]
-
+    if: ${{ vars.METTAUR_CLUSTER_ENABLED }}
     steps:
     - name: Checkout
       uses: actions/checkout@v4
