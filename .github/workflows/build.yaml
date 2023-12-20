@@ -122,7 +122,9 @@ jobs:
 
     - id: build_secret_injector_image
       name: 'Build secret-injector image'
-      run: "gcloud builds submit --tag us-docker.pkg.dev/$GCLOUD_PROJECT/$GOOGLE_ARTIFACT_REGISTRY/$IMAGE_NAME:$IMAGE_TAG"
+      run: |-
+        cd secret-injector/
+        gcloud builds submit --tag us-docker.pkg.dev/$GCLOUD_PROJECT/$GOOGLE_ARTIFACT_REGISTRY/$IMAGE_NAME:$IMAGE_TAG
 
     - id: retag_secret_injector_image_as_latest
       name: 'Tag secret-injector image as latest'
