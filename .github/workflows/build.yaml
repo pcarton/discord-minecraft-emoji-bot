@@ -38,8 +38,8 @@ jobs:
         git add Cargo.toml
         git commit -m "Update Cargo.toml"
         git push
-  
-  build-and-upload:
+
+  build-cartonbot:
     runs-on: ubuntu-latest
     permissions:
       contents: 'read'
@@ -50,7 +50,6 @@ jobs:
       GOOGLE_REGION: "us-central1"
       GOOGLE_ARTIFACT_REGISTRY: "pcarton-internal-docker"
       IMAGE_NAME: "cartonbot"
-      SECRET_INJECTOR_IMAGE_NAME: "secret-injector"
       IMAGE_TAG: ${{ needs.make-new-release.outputs.version }}
       DEPLOYMENT_NAME: "cartonbot"
     needs: [make-new-release]
@@ -73,50 +72,114 @@ jobs:
     - id: auth_docker
       name: "Auth Docker"
       run: |-
-        gcloud auth configure-docker
+        gcloud auth configure-docker us-docker.pkg.dev
 
-    - id: build_image
-      name: 'Build Bot Docker image to GCR'
+    - id: build_cartonbot_image
+      name: 'Build Bot Docker image'
       run: "gcloud builds submit --tag us-docker.pkg.dev/$GCLOUD_PROJECT/$GOOGLE_ARTIFACT_REGISTRY/$IMAGE_NAME:$IMAGE_TAG"
 
-    - id: retag_image_as_latest
+    - id: retag_cartonbot_image_as_latest
       name: 'Tag image as latest'
       run: |-
         docker pull us-docker.pkg.dev/$GCLOUD_PROJECT/$GOOGLE_ARTIFACT_REGISTRY/$IMAGE_NAME:$IMAGE_TAG
         docker tag us-docker.pkg.dev/$GCLOUD_PROJECT/$GOOGLE_ARTIFACT_REGISTRY/$IMAGE_NAME:$IMAGE_TAG us-docker.pkg.dev/$GCLOUD_PROJECT/$GOOGLE_ARTIFACT_REGISTRY/$IMAGE_NAME:latest
         docker push us-docker.pkg.dev/$GCLOUD_PROJECT/$GOOGLE_ARTIFACT_REGISTRY/$IMAGE_NAME:latest
 
-    - id: build_secret_injector_image
-      name: 'Build Secret Injector Docker image to GCR'
+  build-secret-injector:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: 'read'
+      pull-requests: 'read'
+      id-token: 'write'
+    env:
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      GOOGLE_REGION: "us-central1"
+      GOOGLE_ARTIFACT_REGISTRY: "pcarton-internal-docker"
+      IMAGE_NAME: "secret-injector"
+      IMAGE_TAG: ${{ needs.make-new-release.outputs.version }}
+      DEPLOYMENT_NAME: "cartonbot"
+    needs: [make-new-release]
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+      with:
+        submodules: recursive
+
+    - id: 'auth'
+      uses: 'google-github-actions/auth@v2.0.0'
+      with:
+        workload_identity_provider: "projects/1099089755819/locations/global/workloadIdentityPools/git-pool/providers/git-provider"
+        service_account: 'svc-github-actions@pcarton-personal.iam.gserviceaccount.com'
+
+    - name: 'Set up Cloud SDK'
+      uses: 'google-github-actions/setup-gcloud@v2.0.0'
+
+    - id: auth_docker
+      name: "Auth Docker"
       run: |-
-        cd secret-injector/
-        gcloud builds submit --tag us-docker.pkg.dev/$GCLOUD_PROJECT/$GOOGLE_ARTIFACT_REGISTRY/$SECRET_INJECTOR_IMAGE_NAME:$IMAGE_TAG
+        gcloud auth configure-docker us-docker.pkg.dev
+
+    - id: build_secret_injector_image
+      name: 'Build secret-injector image'
+      run: "gcloud builds submit --tag us-docker.pkg.dev/$GCLOUD_PROJECT/$GOOGLE_ARTIFACT_REGISTRY/$IMAGE_NAME:$IMAGE_TAG"
 
     - id: retag_secret_injector_image_as_latest
-      name: 'Tag image as latest'
+      name: 'Tag secret-injector image as latest'
       run: |-
-        docker pull us-docker.pkg.dev/$GCLOUD_PROJECT/$GOOGLE_ARTIFACT_REGISTRY/$SECRET_INJECTOR_IMAGE_NAME:$IMAGE_TAG
-        docker tag us-docker.pkg.dev/$GCLOUD_PROJECT/$GOOGLE_ARTIFACT_REGISTRY/$SECRET_INJECTOR_IMAGE_NAME:$IMAGE_TAG us-docker.pkg.dev/$GCLOUD_PROJECT/$GOOGLE_ARTIFACT_REGISTRY/$SECRET_INJECTOR_IMAGE_NAME:latest
-        docker push us-docker.pkg.dev/$GCLOUD_PROJECT/$GOOGLE_ARTIFACT_REGISTRY/$SECRET_INJECTOR_IMAGE_NAME:latest
+        docker pull us-docker.pkg.dev/$GCLOUD_PROJECT/$GOOGLE_ARTIFACT_REGISTRY/$IMAGE_NAME:$IMAGE_TAG
+        docker tag us-docker.pkg.dev/$GCLOUD_PROJECT/$GOOGLE_ARTIFACT_REGISTRY/$IMAGE_NAME:$IMAGE_TAG us-docker.pkg.dev/$GCLOUD_PROJECT/$GOOGLE_ARTIFACT_REGISTRY/$IMAGE_NAME:latest
+        docker push us-docker.pkg.dev/$GCLOUD_PROJECT/$GOOGLE_ARTIFACT_REGISTRY/$IMAGE_NAME:latest
 
-    # - id: set_up_kustomize
-    #   name: Set up Kustomize
-    #   run: |-
-    #     curl -s "https://raw.githubusercontent.com/kubernetes-sigs/kustomize/master/hack/install_kustomize.sh"  | bash
-    #     chmod u+x ./kustomize
-    #     mv ./kustomize ./kubernetes/
+  deploy-to-mettaur:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: 'read'
+      pull-requests: 'read'
+      id-token: 'write'
+    env:
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      GOOGLE_REGION: "us-central1"
+      GOOGLE_ARTIFACT_REGISTRY: "pcarton-internal-docker"
+      IMAGE_NAME: "cartonbot"
+      SECRET_INJECTOR_IMAGE_NAME: "secret-injector"
+      IMAGE_TAG: ${{ needs.make-new-release.outputs.version }}
+      DEPLOYMENT_NAME: "cartonbot"
+    needs: [build-secret-injector,build-cartonbot]
+    if: ${{ vars.METTAUR_CLUSTER_ENABLED && github.actor != 'dependabot[bot]'}}
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+      with:
+        submodules: recursive
 
-    # - id: setup_cluster_auth
-    #   name: Setup Cluster Auth
-    #   uses: google-github-actions/get-gke-credentials@v1.0.2
-    #   with:
-    #     cluster_name: "mettaur"
-    #     location: "us-central1"
+    - id: 'auth'
+      uses: 'google-github-actions/auth@v2.0.0'
+      with:
+        workload_identity_provider: "projects/1099089755819/locations/global/workloadIdentityPools/git-pool/providers/git-provider"
+        service_account: 'svc-github-actions@pcarton-personal.iam.gserviceaccount.com'
 
-    # - id: deploy_gke
-    #   name: Deploy to GKE
-    #   run: |-
-    #     cd kubernetes/
-    #     ./kustomize edit set image cartonbot-app-image=us-docker.pkg.dev/$GCLOUD_PROJECT/$GOOGLE_ARTIFACT_REGISTRY/$IMAGE_NAME:$IMAGE_TAG
-    #     ./kustomize edit set image cartonbot-init-secrets-image=us-docker.pkg.dev/$GCLOUD_PROJECT/$GOOGLE_ARTIFACT_REGISTRY/$SECRET_INJECTOR_IMAGE_NAME:$IMAGE_TAG
-    #     ./kustomize build . | kubectl apply -f -
+    - name: 'Set up Cloud SDK'
+      uses: 'google-github-actions/setup-gcloud@v2.0.0'
+
+    - id: set_up_kustomize
+      name: Set up Kustomize
+      run: |-
+        curl -s "https://raw.githubusercontent.com/kubernetes-sigs/kustomize/master/hack/install_kustomize.sh"  | bash
+        chmod u+x ./kustomize
+        mv ./kustomize ./kubernetes/
+
+    - id: setup_cluster_auth
+      name: Setup Cluster Auth
+      uses: google-github-actions/get-gke-credentials@v1.0.2
+      with:
+        cluster_name: "mettaur"
+        location: "us-central1"
+
+    - id: deploy_gke
+      name: Deploy to GKE
+      run: |-
+        cd kubernetes/
+        ./kustomize edit set image cartonbot-app-image=us-docker.pkg.dev/$GCLOUD_PROJECT/$GOOGLE_ARTIFACT_REGISTRY/$IMAGE_NAME:$IMAGE_TAG
+        ./kustomize edit set image cartonbot-init-secrets-image=us-docker.pkg.dev/$GCLOUD_PROJECT/$GOOGLE_ARTIFACT_REGISTRY/$SECRET_INJECTOR_IMAGE_NAME:$IMAGE_TAG
+        ./kustomize build . | kubectl apply -f -
