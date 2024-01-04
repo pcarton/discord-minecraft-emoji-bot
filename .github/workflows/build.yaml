@@ -67,7 +67,7 @@ jobs:
         service_account: 'svc-github-actions@pcarton-personal.iam.gserviceaccount.com'
 
     - name: 'Set up Cloud SDK'
-      uses: 'google-github-actions/setup-gcloud@v2.0.0'
+      uses: 'google-github-actions/setup-gcloud@v2.0.1'
 
     - id: auth_docker
       name: "Auth Docker"
@@ -117,7 +117,7 @@ jobs:
         service_account: 'svc-github-actions@pcarton-personal.iam.gserviceaccount.com'
 
     - name: 'Set up Cloud SDK'
-      uses: 'google-github-actions/setup-gcloud@v2.0.0'
+      uses: 'google-github-actions/setup-gcloud@v2.0.1'
 
     - id: auth_docker
       name: "Auth Docker"
@@ -171,7 +171,7 @@ jobs:
         service_account: 'svc-github-actions@pcarton-personal.iam.gserviceaccount.com'
 
     - name: 'Set up Cloud SDK'
-      uses: 'google-github-actions/setup-gcloud@v2.0.0'
+      uses: 'google-github-actions/setup-gcloud@v2.0.1'
 
     - id: set_up_kustomize
       name: Set up Kustomize
@@ -182,7 +182,7 @@ jobs:
 
     - id: setup_cluster_auth
       name: Setup Cluster Auth
-      uses: google-github-actions/get-gke-credentials@v1.0.2
+      uses: google-github-actions/get-gke-credentials@v2.0.0
       with:
         cluster_name: "mettaur"
         location: "us-central1"
