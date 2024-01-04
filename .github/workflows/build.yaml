@@ -78,6 +78,10 @@ jobs:
       name: 'Build Bot Docker image'
       run: "gcloud builds submit --tag us-docker.pkg.dev/$GCLOUD_PROJECT/$GOOGLE_ARTIFACT_REGISTRY/$IMAGE_NAME:$IMAGE_TAG"
 
+    - id: generate_sbom_cartonbot
+      name: 'Generate SBOM for Image'
+      run: "gcloud artifacts sbom export --uri=us-docker.pkg.dev/$GCLOUD_PROJECT/$GOOGLE_ARTIFACT_REGISTRY/$IMAGE_NAME:$IMAGE_TAG"
+
     - id: retag_cartonbot_image_as_latest
       name: 'Tag image as latest'
       run: |-
@@ -125,6 +129,11 @@ jobs:
       run: |-
         cd secret-injector/
         gcloud builds submit --tag us-docker.pkg.dev/$GCLOUD_PROJECT/$GOOGLE_ARTIFACT_REGISTRY/$IMAGE_NAME:$IMAGE_TAG
+
+    - id: generate_sbom_secret_injector
+      name: 'Generate SBOM for Image'
+      run: "gcloud artifacts sbom export --uri=us-docker.pkg.dev/$GCLOUD_PROJECT/$GOOGLE_ARTIFACT_REGISTRY/$IMAGE_NAME:$IMAGE_TAG"
+
 
     - id: retag_secret_injector_image_as_latest
       name: 'Tag secret-injector image as latest'
