@@ -19,3 +19,9 @@ updates:
     directory: "/"
     schedule:
       interval: "weekly"
+
+  # Maintain dependencies for secret-injector docker
+  - package-ecosystem: "docker"
+    directory: "/secret-injector/"
+    schedule:
+      interval: "weekly"
