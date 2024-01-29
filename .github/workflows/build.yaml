@@ -87,7 +87,7 @@ jobs:
         submodules: recursive
 
     - id: 'auth'
-      uses: 'google-github-actions/auth@v2.0.1'
+      uses: 'google-github-actions/auth@v2.1.0'
       with:
         workload_identity_provider: "projects/1099089755819/locations/global/workloadIdentityPools/git-pool/providers/git-provider"
         service_account: 'svc-github-actions@pcarton-personal.iam.gserviceaccount.com'
