@@ -12,3 +12,4 @@ FROM gcr.io/distroless/cc@sha256:ef6b28ea043173c428d9a8b1e673896466d1846112e4626
 COPY --from=build /app/target/release/discord-minecraft-emoji-bot /
 
 ENTRYPOINT ["/discord-minecraft-emoji-bot"]
+
