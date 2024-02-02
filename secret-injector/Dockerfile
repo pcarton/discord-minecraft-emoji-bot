@@ -1,4 +1,4 @@
-FROM google/cloud-sdk:461.0.0-alpine
+FROM google/cloud-sdk:462.0.1-alpine
 COPY ./get-secrets.sh /get-secrets.sh
 RUN chmod +x /get-secrets.sh
 WORKDIR /
