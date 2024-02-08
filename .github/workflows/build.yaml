@@ -6,50 +6,24 @@ on:
       - master
 
 jobs:
-  make-new-release:
-    runs-on: ubuntu-latest
-    permissions:
-      contents: 'write'
-      pull-requests: 'read'
-      id-token: 'write'
-    env:
-      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-    outputs:
-      version: ${{ steps.bump_release.outputs.version }}
-
-    steps:
-    - id: bump_release
-      name: Bump Release
-      uses: rymndhng/release-on-push-action@v0.28.0
-      with:
-        bump_version_scheme: ${{ github.actor == 'dependabot[bot]' && 'patch' || 'minor'  }}
-        dry_run: false
-        tag_prefix: ''
-    - name: Check out the repo
-      uses: actions/checkout@v4
-    - name: "Update Cargo.toml"
-      run: |
-        sed -i.bak -e 's/^\s*version = "\{0,1\}[0-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*"\s*$/version = "${{ steps.bump_release.outputs.version }}"/g' Cargo.toml
-    - name: Commit and push changes
-      run: |
-        git config --global user.name "pcarton"
-        git config --global user.email "patrick.d.carton@gmail.com"
-        git config advice.addIgnoredFile false
-        git add Cargo.toml
-        git commit -m "Update Cargo.toml"
-        git push
+  create-release:
+    uses: pcarton/github-actions/.github/workflows/make-release.yaml@v0.5.0
+    with:
+      relative_package_file_path: 'Cargo.toml'
+    secrets:
+      input_github_token: ${{ secrets.GITHUB_TOKEN }}
 
   build-cartonbot:
     uses: pcarton/github-actions/.github/workflows/docker-to-gar.yaml@v0.2.3
     with:
       google_artifact_registry: ${{ vars.GOOGLE_ARTIFACT_REGISTRY }}
       image_name: "cartonbot"
-      image_tag: ${{ needs.make-new-release.outputs.version }}
+      image_tag: ${{ needs.create-release.outputs.version }}
       workload_identity_provider: ${{ vars.WORKLOAD_IDENTITY_PROVIDER }}
       workload_identity_service_account: ${{ vars.GOOGLE_GHA_SERVICE_ACCOUNT }}
     secrets:
       input_github_token: ${{ secrets.GITHUB_TOKEN }}
-    needs: [make-new-release]
+    needs: [create-release]
 
   build-secret-injector:
     if: ${{ vars.METTAUR_CLUSTER_ENABLED }}
@@ -57,12 +31,12 @@ jobs:
     with:
       google_artifact_registry: ${{ vars.GOOGLE_ARTIFACT_REGISTRY }}
       image_name: "secret-injector"
-      image_tag: ${{ needs.make-new-release.outputs.version }}
+      image_tag: ${{ needs.create-release.outputs.version }}
       workload_identity_provider: ${{ vars.WORKLOAD_IDENTITY_PROVIDER }}
       workload_identity_service_account: ${{ vars.GOOGLE_GHA_SERVICE_ACCOUNT }}
     secrets:
       input_github_token: ${{ secrets.GITHUB_TOKEN }}
-    needs: [make-new-release]
+    needs: [create-release]
 
   deploy-to-mettaur:
     if: ${{ vars.METTAUR_CLUSTER_ENABLED && github.actor != 'dependabot[bot]'}}
@@ -77,7 +51,7 @@ jobs:
       GOOGLE_ARTIFACT_REGISTRY: "pcarton-internal-docker"
       IMAGE_NAME: "cartonbot"
       SECRET_INJECTOR_IMAGE_NAME: "secret-injector"
-      IMAGE_TAG: ${{ needs.make-new-release.outputs.version }}
+      IMAGE_TAG: ${{ needs.create-release.outputs.version }}
       DEPLOYMENT_NAME: "cartonbot"
     needs: [build-secret-injector,build-cartonbot]
     steps:
