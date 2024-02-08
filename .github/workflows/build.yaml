@@ -10,6 +10,7 @@ jobs:
     uses: pcarton/github-actions/.github/workflows/make-release.yaml@v0.5.1
     with:
       relative_package_file_path: 'Cargo.toml'
+      version_prefix: ''
     secrets:
       input_github_token: ${{ secrets.GITHUB_TOKEN }}
 
