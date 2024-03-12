@@ -57,7 +57,7 @@ jobs:
     needs: [build-secret-injector,build-cartonbot]
     steps:
     - name: Checkout
-      uses: actions/checkout@v4
+      uses: actions/checkout@v4.1.2
       with:
         submodules: recursive
 
