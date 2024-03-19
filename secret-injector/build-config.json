@@ -1,0 +1,6 @@
+{
+    "serviceAccount": "projects/pcarton-personal/serviceAccounts/svc-cloud-build@pcarton-personal.iam.gserviceaccount.comT",
+    "options": {
+        "logging": "CLOUD_LOGGING_ONLY"
+    }
+}
