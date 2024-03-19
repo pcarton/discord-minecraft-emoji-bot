@@ -1,0 +1,19 @@
+{
+    "steps": [{
+        "name": "gcr.io/cloud-builders/docker",
+        "args": [
+            "build",
+            "-t",
+            "us-docker.pkg.dev/$_GCLOUD_PROJECT/$_GOOGLE_ARTIFACT_REGISTRY/$_IMAGE_NAME:$_IMAGE_TAG",
+            "$_SOURCE_DIR"
+        ]
+    }],
+    "serviceAccount": "projects/$_GCLOUD_PROJECT/serviceAccounts/svc-cloud-build@$_GCLOUD_PROJECT.iam.gserviceaccount.com",
+    "images": [
+        "us-docker.pkg.dev/$_GCLOUD_PROJECT/$_GOOGLE_ARTIFACT_REGISTRY/$_IMAGE_NAME:$_IMAGE_TAG"
+    ],
+    "options": {
+        "logging": "CLOUD_LOGGING_ONLY"
+    }
+
+}
