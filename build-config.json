@@ -1,6 +1,10 @@
 {
-    "serviceAccount": "projects/pcarton-personal/serviceAccounts/svc-cloud-build@pcarton-personal.iam.gserviceaccount.comT",
+    "serviceAccount": "projects/$_GCLOUD_PROJECT/serviceAccounts/svc-cloud-build@$_GCLOUD_PROJECT.iam.gserviceaccount.com",
+    "images": [
+        "us-docker.pkg.dev/$_GCLOUD_PROJECT/$_GOOGLE_ARTIFACT_REGISTRY/$_IMAGE_NAME:$_IMAGE_TAG"
+    ],
     "options": {
         "logging": "CLOUD_LOGGING_ONLY"
     }
+
 }
