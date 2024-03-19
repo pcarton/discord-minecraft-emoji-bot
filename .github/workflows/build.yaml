@@ -3,47 +3,44 @@ name: build image
 on:
   push:
     branches:
-      - cloud-build-config-file
+      - master
 
 jobs:
-  # create-release:
-  #   uses: pcarton/github-actions/.github/workflows/make-release.yaml@v0.5.2
-  #   with:
-  #     relative_package_file_path: 'Cargo.toml'
-  #     version_prefix: ''
-  #   secrets:
-  #     input_github_token: ${{ secrets.GITHUB_TOKEN }}
+  create-release:
+    uses: pcarton/github-actions/.github/workflows/make-release.yaml@v0.5.2
+    with:
+      relative_package_file_path: 'Cargo.toml'
+      version_prefix: ''
+    secrets:
+      input_github_token: ${{ secrets.GITHUB_TOKEN }}
 
   build-cartonbot:
-    uses: pcarton/github-actions/.github/workflows/docker-to-gar.yaml@cloud-build-config-file
+    uses: pcarton/github-actions/.github/workflows/docker-to-gar.yaml@v0.6.0
     with:
       google_artifact_registry: ${{ vars.GOOGLE_ARTIFACT_REGISTRY }}
       image_name: "cartonbot"
-      # image_tag: ${{ needs.create-release.outputs.version }}
-      image_tag: "test-new-build-config"
+      image_tag: ${{ needs.create-release.outputs.version }}
       build_config_path: './build-config.json'
-      source_directory_path: '.'
       workload_identity_provider: ${{ vars.WORKLOAD_IDENTITY_PROVIDER }}
       workload_identity_service_account: ${{ vars.GOOGLE_GHA_SERVICE_ACCOUNT }}
     secrets:
       input_github_token: ${{ secrets.GITHUB_TOKEN }}
-    # needs: [create-release]
+    needs: [create-release]
 
   build-secret-injector:
     if: ${{ vars.METTAUR_CLUSTER_ENABLED }}
-    uses: pcarton/github-actions/.github/workflows/docker-to-gar.yaml@cloud-build-config-file
+    uses: pcarton/github-actions/.github/workflows/docker-to-gar.yaml@v0.6.0
     with:
       google_artifact_registry: ${{ vars.GOOGLE_ARTIFACT_REGISTRY }}
       image_name: "secret-injector"
-      # image_tag: ${{ needs.create-release.outputs.version }}
-      image_tag: "test-new-build-config"
+      image_tag: ${{ needs.create-release.outputs.version }}
       build_config_path: 'secret-injector/build-config.json'
       source_directory_path: 'secret-injector'
       workload_identity_provider: ${{ vars.WORKLOAD_IDENTITY_PROVIDER }}
       workload_identity_service_account: ${{ vars.GOOGLE_GHA_SERVICE_ACCOUNT }}
     secrets:
       input_github_token: ${{ secrets.GITHUB_TOKEN }}
-    # needs: [create-release]
+    needs: [create-release]
 
   deploy-to-mettaur:
     if: ${{ vars.METTAUR_CLUSTER_ENABLED && github.actor != 'dependabot[bot]'}}
