@@ -27,7 +27,7 @@ jobs:
       workload_identity_service_account: ${{ vars.GOOGLE_GHA_SERVICE_ACCOUNT }}
     secrets:
       input_github_token: ${{ secrets.GITHUB_TOKEN }}
-    needs: [create-release]
+    # needs: [create-release]
 
   build-secret-injector:
     if: ${{ vars.METTAUR_CLUSTER_ENABLED }}
@@ -43,7 +43,7 @@ jobs:
       workload_identity_service_account: ${{ vars.GOOGLE_GHA_SERVICE_ACCOUNT }}
     secrets:
       input_github_token: ${{ secrets.GITHUB_TOKEN }}
-    needs: [create-release]
+    # needs: [create-release]
 
   deploy-to-mettaur:
     if: ${{ vars.METTAUR_CLUSTER_ENABLED && github.actor != 'dependabot[bot]'}}
