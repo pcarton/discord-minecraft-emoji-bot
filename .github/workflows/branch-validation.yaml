@@ -4,10 +4,6 @@ on:
   pull_request:
     branches:
       - master
-    paths:
-      - src/**
-      - Dockerfile
-      - Cargo.toml
 
 jobs:
   build-and-test:
