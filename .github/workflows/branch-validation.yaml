@@ -4,13 +4,9 @@ on:
   pull_request:
     branches:
       - master
-    paths:
-      - src/**
-      - Dockerfile
-      - Cargo.toml
 
 jobs:
-  build_and_test:
+  build-and-test:
     name: Rust project
     runs-on: ubuntu-latest
     steps:
@@ -24,15 +20,17 @@ jobs:
           args: --release --all-features
         env:
           RUSTFLAGS: --deny warnings
-  validate_docker_build:
-    name: Validate Docker Build
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout the Repo
-        uses: actions/checkout@v4.1.2
-      - name: Build Docker Image
-        uses: docker/build-push-action@v5.3.0
-        with:
-          context: .
-          file: ./Dockerfile
-          push: false
+  test-docker-bot:
+    uses: pcarton/github-actions/.github/workflows/validate-docker-build.yaml@v0.7.0
+    with:
+      dockerfile_path: './Dockerfile'
+      docker_build_context: '.'
+    secrets:
+      input_github_token: ${{ secrets.GITHUB_TOKEN }}
+  test-docker-secret-injector:
+    uses: pcarton/github-actions/.github/workflows/validate-docker-build.yaml@v0.7.0
+    with:
+      dockerfile_path: './secret-injector/Dockerfile'
+      docker_build_context: './secret-injector'
+    secrets:
+      input_github_token: ${{ secrets.GITHUB_TOKEN }}
