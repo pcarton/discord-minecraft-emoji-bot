@@ -1,4 +1,4 @@
-FROM rust:1.77.2-buster as build
+FROM rust:1.78.0-buster as build
 
 WORKDIR /app
 
