@@ -7,7 +7,7 @@ on:
 
 jobs:
   create-release:
-    uses: pcarton/github-actions/.github/workflows/make-release.yaml@v0.7.3
+    uses: pcarton/github-actions/.github/workflows/make-release.yaml@v0.8.0
     with:
       relative_package_file_path: 'Cargo.toml'
       version_prefix: ''
@@ -15,7 +15,7 @@ jobs:
       input_github_token: ${{ secrets.GITHUB_TOKEN }}
 
   build-cartonbot:
-    uses: pcarton/github-actions/.github/workflows/docker-to-gar.yaml@v0.7.3
+    uses: pcarton/github-actions/.github/workflows/docker-to-gar.yaml@v0.8.0
     with:
       google_artifact_registry: ${{ vars.GOOGLE_ARTIFACT_REGISTRY }}
       image_name: "cartonbot"
@@ -29,7 +29,7 @@ jobs:
 
   build-secret-injector:
     if: ${{ vars.METTAUR_CLUSTER_ENABLED }}
-    uses: pcarton/github-actions/.github/workflows/docker-to-gar.yaml@v0.7.3
+    uses: pcarton/github-actions/.github/workflows/docker-to-gar.yaml@v0.8.0
     with:
       google_artifact_registry: ${{ vars.GOOGLE_ARTIFACT_REGISTRY }}
       image_name: "secret-injector"
