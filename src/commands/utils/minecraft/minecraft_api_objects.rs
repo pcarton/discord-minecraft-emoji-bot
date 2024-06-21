@@ -1,6 +1,7 @@
 use serde::Deserialize;
 
 #[derive(Deserialize)]
+#[allow(dead_code)]
 pub struct User {
     // The player's username
     pub name: String,
@@ -9,6 +10,7 @@ pub struct User {
 }
 
 #[derive(Deserialize)]
+#[allow(dead_code)]
 pub struct SessionData {
     // The player's unique Mojang ID
     pub id: String,
@@ -19,6 +21,7 @@ pub struct SessionData {
 }
 
 #[derive(Deserialize)]
+#[allow(dead_code)]
 pub struct SessionPropertiesObject {
     // The name of the property, such as "textures" for the player's skin data
     pub name: String,
@@ -28,6 +31,7 @@ pub struct SessionPropertiesObject {
 
 #[derive(Deserialize)]
 #[allow(non_snake_case)]
+#[allow(dead_code)]
 pub struct EncodedTextureObject {
     // The player's unique Mojang ID
     pub profileId: String,
@@ -39,12 +43,14 @@ pub struct EncodedTextureObject {
 
 #[derive(Deserialize)]
 #[allow(non_snake_case)]
+#[allow(dead_code)]
 pub struct TextureObject {
    // Information about the player's skin, such as the URL of the skin image
    pub SKIN:  SkinObject,
 }
 
 #[derive(Deserialize)]
+#[allow(dead_code)]
 pub struct SkinObject {
     // The URL of the player's skin image
     pub url: String,
