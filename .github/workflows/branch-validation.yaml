@@ -10,7 +10,7 @@ jobs:
     name: Rust project
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4.2.1
+      - uses: actions/checkout@v4.2.2
       - uses: actions-rs/toolchain@v1.0.7
         with:
           toolchain: stable
@@ -21,14 +21,14 @@ jobs:
         env:
           RUSTFLAGS: --deny warnings
   test-docker-bot:
-    uses: pcarton/github-actions/.github/workflows/validate-docker-build.yaml@v0.11.13
+    uses: pcarton/github-actions/.github/workflows/validate-docker-build.yaml@v0.11.16
     with:
       dockerfile_path: './Dockerfile'
       docker_build_context: '.'
     secrets:
       input_github_token: ${{ secrets.GITHUB_TOKEN }}
   test-docker-secret-injector:
-    uses: pcarton/github-actions/.github/workflows/validate-docker-build.yaml@v0.11.13
+    uses: pcarton/github-actions/.github/workflows/validate-docker-build.yaml@v0.11.16
     with:
       dockerfile_path: './secret-injector/Dockerfile'
       docker_build_context: './secret-injector'

@@ -7,7 +7,7 @@ COPY Cargo.** /app/
 
 RUN RUSTFLAGS="--deny warnings" cargo build -r
 
-FROM gcr.io/distroless/cc@sha256:3310655aac0d85eb9d579792387af1ff3eb7a1667823478be58020ab0e0d97a8
+FROM gcr.io/distroless/cc@sha256:2fb69596e692931f909c4c69ab09e50608959eaf8898c44fa64db741a23588b0
 
 COPY --from=build /app/target/release/discord-minecraft-emoji-bot /
 
