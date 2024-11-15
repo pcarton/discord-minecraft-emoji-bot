@@ -71,7 +71,7 @@ jobs:
         service_account: ${{ vars.GOOGLE_GHA_SERVICE_ACCOUNT }}
 
     - name: 'Set up Cloud SDK'
-      uses: 'google-github-actions/setup-gcloud@v2.1.1'
+      uses: 'google-github-actions/setup-gcloud@v2.1.2'
 
     - id: set_up_kustomize
       name: Set up Kustomize
