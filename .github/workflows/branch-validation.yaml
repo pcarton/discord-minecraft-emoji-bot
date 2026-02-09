@@ -21,14 +21,14 @@ jobs:
         env:
           RUSTFLAGS: --deny warnings
   test-docker-bot:
-    uses: pcarton/github-actions/.github/workflows/validate-docker-build.yaml@v0.13.10
+    uses: pcarton/github-actions/.github/workflows/validate-docker-build.yaml@v0.13.12
     with:
       dockerfile_path: './Dockerfile'
       docker_build_context: '.'
     secrets:
       input_github_token: ${{ secrets.GITHUB_TOKEN }}
   test-docker-secret-injector:
-    uses: pcarton/github-actions/.github/workflows/validate-docker-build.yaml@v0.13.10
+    uses: pcarton/github-actions/.github/workflows/validate-docker-build.yaml@v0.13.12
     with:
       dockerfile_path: './secret-injector/Dockerfile'
       docker_build_context: './secret-injector'
