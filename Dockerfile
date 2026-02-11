@@ -1,4 +1,4 @@
-FROM rust:1.91.1 AS build
+FROM rust:1.93.0 AS build
 
 WORKDIR /app
 
@@ -7,7 +7,7 @@ COPY Cargo.** /app/
 
 RUN RUSTFLAGS="--deny warnings" cargo build -r
 
-FROM gcr.io/distroless/cc@sha256:0c8eac8ea42a167255d03c3ba6dfad2989c15427ed93d16c53ef9706ea4691df
+FROM gcr.io/distroless/cc@sha256:d7ac2f9af248f31fe6270002755722afdf6875e0e49cd52b9150208e6a23875c
 
 COPY --from=build /app/target/release/discord-minecraft-emoji-bot /
 
