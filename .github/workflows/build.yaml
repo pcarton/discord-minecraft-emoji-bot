@@ -7,7 +7,7 @@ on:
 
 jobs:
   create-release:
-    uses: pcarton/github-actions/.github/workflows/make-release.yaml@v0.13.12
+    uses: pcarton/github-actions/.github/workflows/make-release.yaml@v0.14.0
     with:
       relative_package_file_path: 'Cargo.toml'
       version_prefix: ''
